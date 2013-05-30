@@ -2,28 +2,50 @@
 <!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
 	<session-factory>
-	    
+
 		<!-- Database connection settings -->
 		<property name="hibernate.connection.driver_class">org.apache.derby.jdbc.EmbeddedDriver</property>
-		<property name="hibernate.connection.url">jdbc:derby:myHosterDB;create=true</property>
+		<property name="hibernate.connection.url">jdbc:derby:hostDB;create=true</property>
 		<property name="hibernate.connection.username">test</property>
 		<property name="hibernate.connection.password">test</property>
 
 		<!-- Default schema on the DB -->
-		<property name="hibernate.default_schema">myHosterApp</property>
+		<property name="hibernate.default_schema">app</property>
 
 		<!-- Derby dialect -->
 		<property name="hibernate.dialect">org.hibernate.dialect.DerbyDialect</property>
 
 		<!-- Drop and re-create the database schema on startup -->
 		<property name="hibernate.hbm2ddl.auto">update</property>
-		
+
+		<!-- Boolean translation between db/objects -->
+		<property name="hibernate.query.substitutions">true='Y', false='N', yes='Y', no='N'</property>
+
 		<!-- Echo all executed SQL to stdout -->
 		<property name="hibernate.show_sql">false</property>
 		<property name="hibernate.format_sql">false</property>
 		<property name="use_sql_comments">false</property>
 
-		<mapping class="com.lisbonbigapps.myhoster.database.entities.MHUser" />
+
+		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityCity" />
+		<mapping
+			class="com.lisbonbigapps.myhoster.database.entities.EntityCityGroup" />
+		<mapping
+			class="com.lisbonbigapps.myhoster.database.entities.EntityCityPlace" />
+		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityComment" />
+		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityCountry" />
+		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityGallery" />
+		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityPhoto" />
+		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityService" />
+		<mapping
+			class="com.lisbonbigapps.myhoster.database.entities.EntityServiceFeedback" />
+		<mapping
+			class="com.lisbonbigapps.myhoster.database.entities.EntitySystemSettings" />
+		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityUser" />
+		<mapping
+			class="com.lisbonbigapps.myhoster.database.entities.EntityUserFeedback" />
+		<mapping
+			class="com.lisbonbigapps.myhoster.database.entities.EntityUserPreferences" />
 
 	</session-factory>
 </hibernate-configuration>

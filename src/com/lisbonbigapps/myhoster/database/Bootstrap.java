@@ -2,20 +2,21 @@ package com.lisbonbigapps.myhoster.database;
 
 import org.softmed.daos.GenericDAO;
 
-import com.lisbonbigapps.myhoster.database.entities.MHUser;
+import com.lisbonbigapps.myhoster.database.entities.EntityUser;
 
 public class Bootstrap {
+    public void init() throws Exception {
+	EntityUser user = new EntityUser();
+	user.setName("Administrator");
+	user.setUsername("admin");
+	user.setPassword("12345");
+	user.setLongitude(034.11);
+	user.setLatitude(-34.1232);
+	user.setHosting(true);
 
-	public void init() throws Exception {
-		MHUser u = new MHUser();
-		u.setName("Administrator");
-		u.setUsername("admin");
-		u.setPassword("12345");
-
-		GenericDAO dao = new GenericDAO();
-		dao.connect();
-		dao.store(u);
-		dao.close();
-	}
-	
+	GenericDAO dao = new GenericDAO();
+	dao.connect();
+	dao.store(user);
+	dao.close();
+    }
 }

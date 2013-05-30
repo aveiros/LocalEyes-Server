@@ -1,4 +1,4 @@
-package com.lisbonbigapps.myhoster.jabber;
+package com.lisbonbigapps.myhoster.xmpp;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,11 +10,11 @@ import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
 @SuppressWarnings("rawtypes")
-public class JabberServerFacade {
-	private static final String ServerUrl = "http://192.168.1.88:4560";
+public class XmppServerFacade {
+	private static final String ServerUrl = "http://192.168.1.91:4560";
 	private static final String ServerDomain = "localhost";
 
-	public boolean isServerOnline() {
+	public boolean isOnline() {
 		String command = "status";
 		Map<String, String> params = new HashMap<String, String>();
 		HashMap response = (HashMap) this.executeJabberCall(command, params);
@@ -22,11 +22,13 @@ public class JabberServerFacade {
 	}
 
 	public boolean isUserRegistered(String userName) {
+	    	/* TODO: not a safe call works only for online users */
+	    
 		String command = "user_resources";
 
 		HashMap<String, String> params = new HashMap<String, String>();
 		params.put("user", userName);
-		params.put("host", JabberServerFacade.ServerDomain);
+		params.put("host", XmppServerFacade.ServerDomain);
 
 		HashMap response = (HashMap) this.executeJabberCall(command, params);
 
@@ -44,7 +46,7 @@ public class JabberServerFacade {
 
 		HashMap<String, String> params = new HashMap<String, String>();
 		params.put("user", name);
-		params.put("host", JabberServerFacade.ServerDomain);
+		params.put("host", XmppServerFacade.ServerDomain);
 		params.put("password", password);
 
 		HashMap callResponse = (HashMap) this
@@ -57,7 +59,7 @@ public class JabberServerFacade {
 
 		HashMap<String, String> params = new HashMap<String, String>();
 		params.put("user", name);
-		params.put("host", JabberServerFacade.ServerDomain);
+		params.put("host", XmppServerFacade.ServerDomain);
 
 		HashMap callResponse = (HashMap) this
 				.executeJabberCall(command, params);
@@ -68,7 +70,7 @@ public class JabberServerFacade {
 		XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 
 		try {
-			config.setServerURL(new URL(JabberServerFacade.ServerUrl));
+			config.setServerURL(new URL(XmppServerFacade.ServerUrl));
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
@@ -87,7 +89,7 @@ public class JabberServerFacade {
 		try {
 			response = client.execute(command, callParams);
 		} catch (XmlRpcException e) {
-			System.err.println("ERROR: executing Jabber command " + command);
+			System.err.println("ERROR: executing xmpp command " + command);
 		}
 
 		return response;

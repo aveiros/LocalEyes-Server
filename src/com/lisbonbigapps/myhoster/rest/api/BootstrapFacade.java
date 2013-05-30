@@ -8,7 +8,7 @@ import javax.ws.rs.core.Response;
 import com.lisbonbigapps.myhoster.database.Bootstrap;
 import com.lisbonbigapps.myhoster.rest.RestMediaType;
 import com.lisbonbigapps.myhoster.rest.response.factories.MessageResponseFactory;
-import com.lisbonbigapps.myhoster.rest.response.resources.RootRestResource;
+import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 
 @Path("/bootstrap")
 public class BootstrapFacade {
@@ -16,7 +16,7 @@ public class BootstrapFacade {
 	@Produces(RestMediaType.Json)
 	public Response initBootstrap() {
 		MessageResponseFactory factory = new MessageResponseFactory();		
-		RootRestResource response;
+		RootResource response;
 		
 		try {
 			Bootstrap bt = new Bootstrap();
