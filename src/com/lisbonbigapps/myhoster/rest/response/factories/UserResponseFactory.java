@@ -161,6 +161,21 @@ public class UserResponseFactory {
 	return location;
     }
 
+    public boolean updateHostingStatus(long userId, Boolean status) {
+	if (status == null) {
+	    return false;
+	}
+
+	EntityUser user = this.getUserEntity(userId);
+	if (user != null) {
+	    user.setHosting(status);
+	    DBAccess.updateItem(user);
+	    return true;
+	}
+
+	return false;
+    }
+
     private EntityUser getUserEntity(long userId) {
 	EntityUser user = null;
 
@@ -191,4 +206,5 @@ public class UserResponseFactory {
 	r.setLocation(l);
 	return r;
     }
+
 }

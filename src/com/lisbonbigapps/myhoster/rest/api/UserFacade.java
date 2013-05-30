@@ -131,6 +131,21 @@ public class UserFacade {
 	return Response.ok(userResource).build();
     }
 
+    @PUT
+    @Path("/hosting")
+    @Produces(RestMediaType.Json)
+    public Response updateHostingStatus(@QueryParam("status") Boolean status) throws Exception {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	UserResponseFactory factory = new UserResponseFactory();
+	factory.updateHostingStatus(this.auth.getUserId(), status);
+
+	return Response.ok().build();
+    }
+
     @GET
     @Path("/available")
     @Produces(RestMediaType.Json)
