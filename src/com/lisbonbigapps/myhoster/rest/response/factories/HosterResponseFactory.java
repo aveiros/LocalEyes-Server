@@ -5,7 +5,6 @@ import com.lisbonbigapps.myhoster.database.resources.UserResourceFactory;
 import com.lisbonbigapps.myhoster.rest.response.resources.LocationResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserResource;
-import com.lisbonbigapps.myhoster.rest.util.ServiceSingleton;
 
 public class HosterResponseFactory {
     public RootResource getHoster(long id) {
@@ -29,7 +28,6 @@ public class HosterResponseFactory {
 	r.setId(user.getId());
 	r.setName(user.getName());
 	r.setUsername(user.getUsername());
-	r.setPhoto(ServiceSingleton.getInstance().getUserDefaultPhoto());
 
 	LocationResource l = new LocationResource();
 	l.setLatitude(user.getLatitude());

@@ -141,11 +141,7 @@ public class UserResponseFactory {
 	return location;
     }
 
-    public RootResource updateLocation(long userId, Double latitude, Double longitude) {
-	if (latitude == null || longitude == null) {
-	    return null;
-	}
-
+    public RootResource updateLocation(long userId, double latitude, double longitude) {
 	LocationResource location = null;
 	EntityUser user = this.getUserEntity(userId);
 
@@ -161,11 +157,7 @@ public class UserResponseFactory {
 	return location;
     }
 
-    public boolean updateHostingStatus(long userId, Boolean status) {
-	if (status == null) {
-	    return false;
-	}
-
+    public boolean updateHostingStatus(long userId, boolean status) {
 	EntityUser user = this.getUserEntity(userId);
 	if (user != null) {
 	    user.setHosting(status);
@@ -192,7 +184,7 @@ public class UserResponseFactory {
 	return user;
     }
 
-    private RootResource assembleUserResource(EntityUser user) {
+    public UserResource assembleUserResource(EntityUser user) {
 	UserResource r = new UserResource();
 	r.setId(user.getId());
 	r.setName(user.getName());
@@ -206,5 +198,4 @@ public class UserResponseFactory {
 	r.setLocation(l);
 	return r;
     }
-
 }

@@ -8,6 +8,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import com.lisbonbigapps.myhoster.rest.RestMediaType;
+import com.lisbonbigapps.myhoster.rest.exception.BadRequestException;
 import com.lisbonbigapps.myhoster.rest.exception.NotFoundException;
 import com.lisbonbigapps.myhoster.rest.exception.UnauthorizedException;
 import com.lisbonbigapps.myhoster.rest.response.factories.HosterResponseFactory;
@@ -24,7 +25,7 @@ public class HosterFacade {
     @GET
     @Produces(RestMediaType.Json)
     public Response getHosters() throws Exception {
-	this.auth.setHttpRequest(this.request);	
+	this.auth.setHttpRequest(this.request);
 	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
 	}
@@ -36,10 +37,14 @@ public class HosterFacade {
     @GET
     @Path("{id}")
     @Produces(RestMediaType.Json)
-    public Response getHosterById(@PathParam("id") long id) throws Exception {
-	this.auth.setHttpRequest(this.request);	
+    public Response getHosterById(@PathParam("id") Long id) throws Exception {
+	this.auth.setHttpRequest(this.request);
 	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
+	}
+
+	if (id == null) {
+	    throw new BadRequestException();
 	}
 
 	RootResource resource = new HosterResponseFactory().getHoster(id);
