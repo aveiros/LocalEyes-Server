@@ -12,20 +12,20 @@ import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 
 @Path("/bootstrap")
 public class BootstrapFacade {
-	@GET
-	@Produces(RestMediaType.Json)
-	public Response initBootstrap() {
-		MessageResponseFactory factory = new MessageResponseFactory();		
-		RootResource response;
-		
-		try {
-			Bootstrap bt = new Bootstrap();
-			bt.init();
-			response = factory.createMessage("bootstrap initialized!");	
-		} catch (Exception e) {
-			response = factory.createError("bootstrap error!");
-		}
-		
-		return Response.ok(response).build();
+    @GET
+    @Produces(RestMediaType.Json)
+    public Response initBootstrap() {
+	MessageResponseFactory factory = new MessageResponseFactory();
+	RootResource response;
+
+	try {
+	    Bootstrap bt = new Bootstrap();
+	    bt.init();
+	    response = factory.createMessage("bootstrap initialized!");
+	} catch (Exception e) {
+	    response = factory.createError("bootstrap error!");
 	}
+
+	return Response.ok(response).build();
+    }
 }

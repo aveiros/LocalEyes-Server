@@ -1,5 +1,7 @@
 package com.lisbonbigapps.myhoster.database;
 
+import com.lisbonbigapps.myhoster.database.entities.EntityCity;
+import com.lisbonbigapps.myhoster.database.entities.EntityCountry;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
 import com.lisbonbigapps.myhoster.database.util.DBAccess;
 
@@ -28,9 +30,25 @@ public class Bootstrap {
 	user3.setLongitude(0);
 	user3.setLatitude(0);
 	user3.setHosting(true);
-	
+
 	DBAccess.saveItem(user1);
 	DBAccess.saveItem(user2);
 	DBAccess.saveItem(user3);
+
+	EntityCountry country1 = new EntityCountry();
+	country1.setName("Portugal");
+
+	EntityCity city1 = new EntityCity();
+	city1.setName("Lisbon");
+
+	EntityCity city2 = new EntityCity();
+	city2.setName("Porto");
+
+	city1.setCountry(country1);
+	city2.setCountry(country1);
+
+	DBAccess.saveItem(country1);
+	DBAccess.saveItem(city1);
+	DBAccess.saveItem(city2);
     }
 }

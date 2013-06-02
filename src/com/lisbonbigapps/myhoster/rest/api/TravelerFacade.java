@@ -69,7 +69,8 @@ public class TravelerFacade {
 	    throw new BadRequestException();
 	}
 
-	//return Response.ok(GeoHelper.distanceFrom(32.666933, -16.924055, 32.666933, -16.954055)).build();
+	// return Response.ok(GeoHelper.distanceFrom(32.666933, -16.924055,
+	// 32.666933, -16.954055)).build();
 	return null;
     }
 }

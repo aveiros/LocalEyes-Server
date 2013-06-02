@@ -10,7 +10,10 @@ public class EntityUserFeedback extends PersistentObject {
     String text;
 
     @OneToOne
-    EntityUser user;
+    EntityUser from;
+
+    @OneToOne
+    EntityUser to;
 
     public String getText() {
 	return text;
@@ -20,11 +23,19 @@ public class EntityUserFeedback extends PersistentObject {
 	this.text = text;
     }
 
-    public EntityUser getUser() {
-	return user;
+    public EntityUser getFrom() {
+	return from;
     }
 
-    public void setUser(EntityUser user) {
-	this.user = user;
+    public void setFrom(EntityUser from) {
+	this.from = from;
+    }
+
+    public EntityUser getTo() {
+	return to;
+    }
+
+    public void setTo(EntityUser to) {
+	this.to = to;
     }
 }

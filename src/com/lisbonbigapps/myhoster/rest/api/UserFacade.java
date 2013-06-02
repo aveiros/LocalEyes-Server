@@ -1,5 +1,7 @@
 package com.lisbonbigapps.myhoster.rest.api;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.GET;
@@ -19,7 +21,6 @@ import com.lisbonbigapps.myhoster.rest.exception.InternalServerException;
 import com.lisbonbigapps.myhoster.rest.exception.NotFoundException;
 import com.lisbonbigapps.myhoster.rest.exception.UnauthorizedException;
 import com.lisbonbigapps.myhoster.rest.response.factories.MessageResponseFactory;
-import com.lisbonbigapps.myhoster.rest.response.factories.ServiceResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.factories.UserResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserResource;
@@ -123,8 +124,8 @@ public class UserFacade {
 	if (userSession == null) {
 	    throw new UnauthorizedException();
 	}
-	
-	if(id == null) {
+
+	if (id == null) {
 	    throw new BadRequestException();
 	}
 
@@ -206,6 +207,50 @@ public class UserFacade {
 	}
 
 	RootResource resource = new UserResponseFactory().updateLocation(this.auth.getUserId(), latitude, longitude);
+	if (resource == null) {
+	    throw new NotFoundException();
+	}
+
+	return Response.ok(resource).build();
+    }
+
+    @GET
+    @Path("{id}/feedback")
+    @Produces(RestMediaType.Json)
+    public Response getUserFeedback(@PathParam("id") Long userId) throws Exception {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	if (userId == null) {
+	    throw new BadRequestException();
+	}
+
+	UserResponseFactory factory = new UserResponseFactory();
+	List<RootResource> resource = factory.getUserFeedback(userId);
+	if (resource == null) {
+	    throw new NotFoundException();
+	}
+
+	return Response.ok(resource).build();
+    }
+
+    @POST
+    @Path("/feedback")
+    @Produces(RestMediaType.Json)
+    public Response createUserFeedback(@QueryParam("id") Long userId, @QueryParam("text") String text) throws Exception {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	if (text == null || text.equals("") || userId == null) {
+	    throw new BadRequestException();
+	}
+
+	UserResponseFactory factory = new UserResponseFactory();
+	RootResource resource = factory.createUserFeedback(this.auth.getUserId(), userId, text);
 	if (resource == null) {
 	    throw new NotFoundException();
 	}
