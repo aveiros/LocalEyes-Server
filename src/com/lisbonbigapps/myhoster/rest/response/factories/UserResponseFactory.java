@@ -135,7 +135,7 @@ public class UserResponseFactory {
 	LocationResource location = null;
 	EntityUser user = this.getUserEntity(userId);
 
-	if (user != null) {
+	if (user != null && user.getId() != null) {
 	    location = new LocationResource();
 	    location.setLatitude(user.getLatitude());
 	    location.setLongitude(user.getLongitude());
@@ -148,7 +148,7 @@ public class UserResponseFactory {
 	LocationResource location = null;
 	EntityUser user = this.getUserEntity(userId);
 
-	if (user != null) {
+	if (user != null && user.getId() != null) {
 	    location = new LocationResource();
 	    location.setLatitude(latitude);
 	    location.setLongitude(longitude);
@@ -162,7 +162,7 @@ public class UserResponseFactory {
 
     public boolean updateHostingStatus(long userId, boolean status) {
 	EntityUser user = this.getUserEntity(userId);
-	if (user != null) {
+	if (user != null && user.getId() != null) {
 	    user.setHosting(status);
 	    DBAccess.updateItem(user);
 	    return true;
@@ -190,7 +190,7 @@ public class UserResponseFactory {
     public List<RootResource> getUserFeedback(long userId) {
 	EntityUser user = this.getUserEntity(userId);
 
-	if (user == null) {
+	if (user == null || user.getId() == null) {
 	    return null;
 	}
 
@@ -207,7 +207,7 @@ public class UserResponseFactory {
 	EntityUser fromUser = this.getUserEntity(fromUserId);
 	EntityUser toUser = this.getUserEntity(toUserId);
 
-	if (fromUser != null && toUser != null) {
+	if (fromUser != null && fromUser.getId() != null && toUser != null && toUser.getId() != null) {
 	    EntityUserFeedback feedback = new EntityUserFeedback();
 	    feedback.setText(text);
 	    feedback.setFrom(fromUser);

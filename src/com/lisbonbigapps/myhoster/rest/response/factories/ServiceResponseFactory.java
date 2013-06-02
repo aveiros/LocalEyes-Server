@@ -17,21 +17,21 @@ public class ServiceResponseFactory {
 	    return null;
 	}
 
-	EntityService eService = DBAccess.getElement(EntityService.class, "id", String.valueOf(serviceId));
+	EntityService service = DBAccess.getElement(EntityService.class, "id", String.valueOf(serviceId));
 
-	if (eService.getId() == null) {
+	if (service == null || service.getId() == null) {
 	    return null;
 	}
 
-	if (eService.getHoster().getId() == userId || eService.getTravel().getId() == userId) {
-	    return this.assembleServiceResource(eService);
+	if (service.getHoster().getId() == userId || service.getTravel().getId() == userId) {
+	    return this.assembleServiceResource(service);
 	}
 
 	return null;
     }
 
     public List<RootResource> getServices(long userId) {
-	String query = "from " + EntityService.class.getSimpleName() + " as service where service.hoster.id = " + userId;
+	String query = "from " + EntityService.class.getSimpleName() + " as service where service.hoster.id = " + userId + " or service.travel.id = " + userId;
 
 	List<EntityService> entities = DBAccess.getDBItem(EntityService.class, query);
 	List<RootResource> resources = new ArrayList<RootResource>();
@@ -51,7 +51,7 @@ public class ServiceResponseFactory {
 	EntityUser hoster = this.getUserById(hosterId);
 	EntityUser travel = this.getUserById(travelerId);
 
-	if (hoster.getId() == null || travel.getId() == null) {
+	if (hoster == null || hoster.getId() == null || travel == null || travel.getId() == null) {
 	    return null;
 	}
 
@@ -69,12 +69,12 @@ public class ServiceResponseFactory {
 
     public List<RootResource> getServiceFeedback(long userId, long serviceId) {
 	EntityUser user = this.getUserById(userId);
-	if (user.getId() == null) {
+	if (user == null || user.getId() == null) {
 	    return null;
 	}
 
 	EntityService service = DBAccess.getElement(EntityService.class, "id", String.valueOf(serviceId));
-	if (service.getId() == null) {
+	if (service == null || service.getId() == null) {
 	    return null;
 	}
 
@@ -91,12 +91,12 @@ public class ServiceResponseFactory {
 	String query = "from " + EntityService.class.getSimpleName() + " as service where service.hoster.id = " + userId;
 
 	EntityService service = DBAccess.getElement(EntityService.class, query);
-	if (service.getId() == null) {
+	if (service == null || service.getId() == null) {
 	    return;
 	}
 
 	EntityUser user = DBAccess.getElement(EntityUser.class, "id", String.valueOf(userId));
-	if (user.getId() == null) {
+	if (user == null || user.getId() == null) {
 	    return;
 	}
 
@@ -114,7 +114,7 @@ public class ServiceResponseFactory {
 	ServiceResource serviceResource = new ServiceResource();
 	serviceResource.setId(service.getId());
 	serviceResource.setHoster(userFactory.assembleUserResource(service.getHoster()));
-	serviceResource.setTraveller(userFactory.assembleUserResource(service.getHoster()));
+	serviceResource.setTraveller(userFactory.assembleUserResource(service.getTravel()));
 
 	return serviceResource;
     }
@@ -126,7 +126,7 @@ public class ServiceResponseFactory {
 	    ServiceFeedbackResource r = new ServiceFeedbackResource();
 	    r.setRate(f.getRate());
 	    r.setText(f.getText());
-	    r.setUser(new UserResponseFactory().assembleUserResource(f.getUser()));	    
+	    r.setUser(new UserResponseFactory().assembleUserResource(f.getUser()));
 	    resources.add(r);
 	}
 
