@@ -22,9 +22,11 @@ import com.lisbonbigapps.myhoster.rest.exception.NotFoundException;
 import com.lisbonbigapps.myhoster.rest.exception.UnauthorizedException;
 import com.lisbonbigapps.myhoster.rest.response.factories.MessageResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.factories.UserResponseFactory;
+import com.lisbonbigapps.myhoster.rest.response.factories.XmppResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserSessionResource;
+import com.lisbonbigapps.myhoster.rest.response.resources.XmppUserResource;
 import com.lisbonbigapps.myhoster.rest.util.Authentication;
 import com.lisbonbigapps.myhoster.xmpp.XmppServerFacade;
 
@@ -38,15 +40,12 @@ public class UserFacade {
     @GET
     @Produces(RestMediaType.Json)
     public Response getUser() {
-	HttpSession session = req.getSession(true);
-	UserSessionResource userSession = (UserSessionResource) session.getAttribute("SESSION_OBJECT");
-
-	if (userSession == null) {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
 	}
 
-	RootResource userResource = new UserResponseFactory().getUser(userSession.getUserId());
-
+	RootResource userResource = new UserResponseFactory().getUser(this.auth.getUserId());
 	if (userResource == null) {
 	    throw new NotFoundException();
 	}
@@ -84,33 +83,35 @@ public class UserFacade {
 	return Response.ok(logoutResource).build();
     }
 
-    @GET
+    @POST
     @Path("register")
     @Produces(RestMediaType.Json)
-    public Response registerUser(@QueryParam("username") String username, @QueryParam("password") String password) throws Exception {
-	if (username == null || username.equals("")) {
+    public Response registerUser(@QueryParam("username") String usr, @QueryParam("password") String pwd) throws Exception {
+	// this.auth.setHttpRequest(this.req);
+	// if (!this.auth.hasUserSession()) {
+	// throw new UnauthorizedException();
+	// }
+
+	if (usr == null || usr.equals("")) {
 	    throw new BadRequestException();
 	}
 
-	if (password == null || password.equals("")) {
+	if (pwd == null || pwd.equals("")) {
 	    throw new BadRequestException();
 	}
 
-	XmppServerFacade xmppServer = new XmppServerFacade();
-	if (!xmppServer.isOnline()) {
-	    throw new InternalServerException();
-	}
-
+	XmppResponseFactory xmppFactory = new XmppResponseFactory();
 	UserResponseFactory userFactory = new UserResponseFactory();
 
-	boolean xmppHasUser = xmppServer.isUserRegistered(username);
-	boolean hostHasUser = userFactory.getUser(username) == null ? false : true;
+	RootResource xmppUser = xmppFactory.getUser(usr);
+	RootResource hostUser = userFactory.getUser(usr);
 
-	if (xmppHasUser || hostHasUser) {
+	if (xmppUser == null || hostUser == null) {
 	    return Response.ok(new MessageResponseFactory().createError("User already exists")).build();
 	} else {
-	    xmppServer.registerUser(username, password);
-	    return Response.ok(userFactory.registerUser(username, password)).build();
+	    xmppFactory.createUser(usr, pwd);
+	    userFactory.createUser(usr, pwd);
+	    return Response.ok().build();
 	}
     }
 
@@ -118,10 +119,8 @@ public class UserFacade {
     @Path("{id}")
     @Produces(RestMediaType.Json)
     public Response getUserById(@PathParam("id") Long id) throws Exception {
-	HttpSession session = req.getSession(true);
-	UserSessionResource userSession = (UserSessionResource) session.getAttribute("SESSION_OBJECT");
-
-	if (userSession == null) {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
 	}
 
@@ -130,7 +129,6 @@ public class UserFacade {
 	}
 
 	RootResource userResource = new UserResponseFactory().getUser(id);
-
 	if (userResource == null) {
 	    throw new NotFoundException();
 	}

@@ -3,7 +3,6 @@ package com.lisbonbigapps.myhoster.rest.response.factories;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.lisbonbigapps.myhoster.database.entities.EntityService;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
 import com.lisbonbigapps.myhoster.database.entities.EntityUserFeedback;
 import com.lisbonbigapps.myhoster.database.resources.UserResourceFactory;
@@ -123,7 +122,7 @@ public class UserResponseFactory {
 	return r;
     }
 
-    public RootResource registerUser(String username, String password) {
+    public RootResource createUser(String username, String password) {
 	EntityUser user = new EntityUser();
 	user.setUsername(username);
 	user.setPassword(password);
