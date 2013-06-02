@@ -5,8 +5,13 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+
+import com.javadocmd.simplelatlng.LatLng;
+import com.javadocmd.simplelatlng.LatLngTool;
+import com.javadocmd.simplelatlng.util.LengthUnit;
 import com.lisbonbigapps.myhoster.rest.RestMediaType;
 import com.lisbonbigapps.myhoster.rest.exception.BadRequestException;
 import com.lisbonbigapps.myhoster.rest.exception.NotFoundException;
@@ -54,4 +59,28 @@ public class HosterFacade {
 
 	return Response.ok(resource).build();
     }
+
+    @GET
+    @Path("find")
+    @Produces(RestMediaType.Json)
+    public Response getHosterUsingRange(@QueryParam("range") Long range) throws Exception {
+	this.auth.setHttpRequest(this.request);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	if (range == null) {
+	    throw new BadRequestException();
+	}
+
+	LatLng point1 = new LatLng(32.666933, -16.924055);
+	LatLng point2 = new LatLng(32.666933, -16.954055);
+	double distance = LatLngTool.distance(point1, point2, LengthUnit.METER);
+	return Response.ok((int) distance).build();
+    }
+
+    /*
+     * @QueryParam("latitude") Double latitude, @QueryParam("longitude") Double
+     * longitude
+     */
 }

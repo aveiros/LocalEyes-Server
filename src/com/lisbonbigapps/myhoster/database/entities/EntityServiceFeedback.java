@@ -2,6 +2,7 @@ package com.lisbonbigapps.myhoster.database.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
 import org.softmed.services.PersistentObject;
@@ -15,6 +16,9 @@ public class EntityServiceFeedback extends PersistentObject {
 
     @OneToOne
     EntityUser user;
+
+    @ManyToOne
+    EntityService service;
 
     public double getRate() {
 	return rate;
@@ -38,5 +42,13 @@ public class EntityServiceFeedback extends PersistentObject {
 
     public void setText(String text) {
 	this.text = text;
+    }
+
+    public EntityService getService() {
+	return service;
+    }
+
+    public void setService(EntityService service) {
+	this.service = service;
     }
 }

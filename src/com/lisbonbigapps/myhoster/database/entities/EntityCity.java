@@ -5,9 +5,8 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-
 import org.softmed.services.PersistentObject;
 
 @Entity
@@ -21,7 +20,7 @@ public class EntityCity extends PersistentObject {
     @Column(precision = 10, scale = 4)
     double latitude;
 
-    @OneToOne
+    @ManyToOne
     EntityCountry country;
 
     @OneToMany

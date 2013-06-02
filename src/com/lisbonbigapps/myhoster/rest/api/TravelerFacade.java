@@ -5,6 +5,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import com.lisbonbigapps.myhoster.rest.RestMediaType;
@@ -37,7 +38,7 @@ public class TravelerFacade {
     @GET
     @Path("{id}")
     @Produces(RestMediaType.Json)
-    public Response getHosterById(@PathParam("id") Long id) throws Exception {
+    public Response getTravelerById(@PathParam("id") Long id) throws Exception {
 	this.auth.setHttpRequest(this.request);
 	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
@@ -58,7 +59,7 @@ public class TravelerFacade {
     @GET
     @Path("find")
     @Produces(RestMediaType.Json)
-    public Response getHosterUsingRange(@PathParam("range") Long range) throws Exception {
+    public Response getTravelerByGeoRange(@QueryParam("range") Long range) throws Exception {
 	this.auth.setHttpRequest(this.request);
 	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
@@ -68,6 +69,7 @@ public class TravelerFacade {
 	    throw new BadRequestException();
 	}
 
-	return Response.ok().build();
+	//return Response.ok(GeoHelper.distanceFrom(32.666933, -16.924055, 32.666933, -16.954055)).build();
+	return null;
     }
 }

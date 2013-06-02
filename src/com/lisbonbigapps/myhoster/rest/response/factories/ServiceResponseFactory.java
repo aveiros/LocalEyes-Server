@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.lisbonbigapps.myhoster.database.entities.EntityService;
+import com.lisbonbigapps.myhoster.database.entities.EntityServiceFeedback;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
 import com.lisbonbigapps.myhoster.database.util.DBAccess;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
+import com.lisbonbigapps.myhoster.rest.response.resources.ServiceFeedbackResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.ServiceResource;
 
 public class ServiceResponseFactory {
@@ -15,14 +17,14 @@ public class ServiceResponseFactory {
 	    return null;
 	}
 
-	EntityService service = DBAccess.getElement(EntityService.class, "id", String.valueOf(serviceId));
+	EntityService eService = DBAccess.getElement(EntityService.class, "id", String.valueOf(serviceId));
 
-	if (service.getId() == null) {
+	if (eService.getId() == null) {
 	    return null;
 	}
 
-	if (service.getHoster().getId() == userId || service.getTravel().getId() == userId) {
-	    return this.assembleServiceResource(service);
+	if (eService.getHoster().getId() == userId || eService.getTravel().getId() == userId) {
+	    return this.assembleServiceResource(eService);
 	}
 
 	return null;
@@ -65,6 +67,47 @@ public class ServiceResponseFactory {
 	return true;
     }
 
+    public List<RootResource> getServiceFeedback(long userId, long serviceId) {
+	EntityUser user = this.getUserById(userId);
+	if (user.getId() == null) {
+	    return null;
+	}
+
+	EntityService service = DBAccess.getElement(EntityService.class, "id", String.valueOf(serviceId));
+	if (service.getId() == null) {
+	    return null;
+	}
+
+	if (service.getHoster().getId() == userId || service.getTravel().getId() == userId) {
+	    String query = "from " + EntityServiceFeedback.class.getSimpleName() + " as feedback where service.id = " + service.getId();
+	    List<EntityServiceFeedback> feedback = DBAccess.getDBItem(EntityServiceFeedback.class, query);
+	    return this.assembleServiceFeedBackResource(feedback);
+	}
+
+	return null;
+    }
+
+    public void createServiceFeedback(long userId, long serviceId, String text, double rate) {
+	String query = "from " + EntityService.class.getSimpleName() + " as service where service.hoster.id = " + userId;
+
+	EntityService service = DBAccess.getElement(EntityService.class, query);
+	if (service.getId() == null) {
+	    return;
+	}
+
+	EntityUser user = DBAccess.getElement(EntityUser.class, "id", String.valueOf(userId));
+	if (user.getId() == null) {
+	    return;
+	}
+
+	EntityServiceFeedback feedback = new EntityServiceFeedback();
+	feedback.setRate(rate);
+	feedback.setUser(user);
+	feedback.setText(text);
+	feedback.setService(service);
+	DBAccess.saveItem(feedback);
+    }
+
     private RootResource assembleServiceResource(EntityService service) {
 	UserResponseFactory userFactory = new UserResponseFactory();
 
@@ -74,6 +117,20 @@ public class ServiceResponseFactory {
 	serviceResource.setTraveller(userFactory.assembleUserResource(service.getHoster()));
 
 	return serviceResource;
+    }
+
+    private List<RootResource> assembleServiceFeedBackResource(List<EntityServiceFeedback> feedback) {
+	List<RootResource> resources = new ArrayList<RootResource>();
+
+	for (EntityServiceFeedback f : feedback) {
+	    ServiceFeedbackResource r = new ServiceFeedbackResource();
+	    r.setRate(f.getRate());
+	    r.setText(f.getText());
+	    r.setUser(new UserResponseFactory().assembleUserResource(f.getUser()));	    
+	    resources.add(r);
+	}
+
+	return resources;
     }
 
     private EntityUser getUserById(long userId) {

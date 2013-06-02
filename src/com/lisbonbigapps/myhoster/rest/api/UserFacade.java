@@ -123,8 +123,8 @@ public class UserFacade {
 	if (userSession == null) {
 	    throw new UnauthorizedException();
 	}
-
-	if (id == null) {
+	
+	if(id == null) {
 	    throw new BadRequestException();
 	}
 
@@ -206,65 +206,6 @@ public class UserFacade {
 	}
 
 	RootResource resource = new UserResponseFactory().updateLocation(this.auth.getUserId(), latitude, longitude);
-	if (resource == null) {
-	    throw new NotFoundException();
-	}
-
-	return Response.ok(resource).build();
-    }
-
-    @GET
-    @Path("/services")
-    @Produces(RestMediaType.Json)
-    public Response getServices() throws Exception {
-	this.auth.setHttpRequest(this.req);
-	if (!this.auth.hasUserSession()) {
-	    throw new UnauthorizedException();
-	}
-
-	ServiceResponseFactory factory = new ServiceResponseFactory();
-	return Response.ok(factory.getServices(this.auth.getUserId())).build();
-    }
-
-    @GET
-    @Path("/services/{id}")
-    @Produces(RestMediaType.Json)
-    public Response getService(@PathParam("id") Long serviceId) throws Exception {
-	this.auth.setHttpRequest(this.req);
-	if (!this.auth.hasUserSession()) {
-	    throw new UnauthorizedException();
-	}
-
-	if (serviceId == null) {
-	    throw new BadRequestException();
-	}
-
-	ServiceResponseFactory factory = new ServiceResponseFactory();
-	RootResource resource = factory.getService(this.auth.getUserId(), serviceId);
-
-	if (resource == null) {
-	    throw new NotFoundException();
-	}
-
-	return Response.ok(resource).build();
-    }
-
-    @POST
-    @Path("/services")
-    @Produces(RestMediaType.Json)
-    public Response createService(@QueryParam("traveller") Long travelerId) throws Exception {
-	this.auth.setHttpRequest(this.req);
-	if (!this.auth.hasUserSession()) {
-	    throw new UnauthorizedException();
-	}
-
-	if (travelerId == null) {
-	    throw new BadRequestException();
-	}
-
-	ServiceResponseFactory factory = new ServiceResponseFactory();
-	RootResource resource = factory.createService(this.auth.getUserId(), travelerId);
-
 	if (resource == null) {
 	    throw new NotFoundException();
 	}
