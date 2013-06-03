@@ -10,7 +10,7 @@ import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
 @SuppressWarnings("rawtypes")
-public class XmppServerFacade {
+public class XmppServerProxy {
 	private static final String ServerUrl = "http://192.168.1.91:4560";
 	private static final String ServerDomain = "localhost";
 
@@ -28,7 +28,7 @@ public class XmppServerFacade {
 
 		HashMap<String, String> params = new HashMap<String, String>();
 		params.put("user", userName);
-		params.put("host", XmppServerFacade.ServerDomain);
+		params.put("host", XmppServerProxy.ServerDomain);
 
 		HashMap response = (HashMap) this.executeJabberCall(command, params);
 
@@ -46,7 +46,7 @@ public class XmppServerFacade {
 
 		HashMap<String, String> params = new HashMap<String, String>();
 		params.put("user", name);
-		params.put("host", XmppServerFacade.ServerDomain);
+		params.put("host", XmppServerProxy.ServerDomain);
 		params.put("password", password);
 
 		HashMap callResponse = (HashMap) this
@@ -59,7 +59,7 @@ public class XmppServerFacade {
 
 		HashMap<String, String> params = new HashMap<String, String>();
 		params.put("user", name);
-		params.put("host", XmppServerFacade.ServerDomain);
+		params.put("host", XmppServerProxy.ServerDomain);
 
 		HashMap callResponse = (HashMap) this
 				.executeJabberCall(command, params);
@@ -70,7 +70,7 @@ public class XmppServerFacade {
 		XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 
 		try {
-			config.setServerURL(new URL(XmppServerFacade.ServerUrl));
+			config.setServerURL(new URL(XmppServerProxy.ServerUrl));
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}

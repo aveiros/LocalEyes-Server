@@ -1,4 +1,4 @@
-package com.lisbonbigapps.myhoster.rest;
+package com.lisbonbigapps.myhoster.rest.util;
 
 import javax.ws.rs.core.MediaType;
 

@@ -8,7 +8,7 @@ import javax.ws.rs.core.Response;
 
 import com.lisbonbigapps.myhoster.database.dao.UserDAO;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
-import com.lisbonbigapps.myhoster.rest.RestMediaType;
+import com.lisbonbigapps.myhoster.rest.util.RestMediaType;
 
 @Path("/test")
 public class TestFacade {

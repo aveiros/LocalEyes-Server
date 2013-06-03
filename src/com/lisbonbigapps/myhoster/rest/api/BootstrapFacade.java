@@ -6,9 +6,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import com.lisbonbigapps.myhoster.database.Bootstrap;
-import com.lisbonbigapps.myhoster.rest.RestMediaType;
 import com.lisbonbigapps.myhoster.rest.response.factories.MessageResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
+import com.lisbonbigapps.myhoster.rest.util.RestMediaType;
 
 @Path("/bootstrap")
 public class BootstrapFacade {

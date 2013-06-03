@@ -3,11 +3,11 @@ package com.lisbonbigapps.myhoster.rest.response.factories;
 import com.lisbonbigapps.myhoster.rest.exception.InternalServerException;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.XmppUserResource;
-import com.lisbonbigapps.myhoster.xmpp.XmppServerFacade;
+import com.lisbonbigapps.myhoster.xmpp.XmppServerProxy;
 
 public class XmppResponseFactory {
     public RootResource getUser(String username) {
-	XmppServerFacade server = new XmppServerFacade();
+	XmppServerProxy server = new XmppServerProxy();
 	if (!server.isOnline()) {
 	    throw new InternalServerException();
 	}
@@ -17,7 +17,7 @@ public class XmppResponseFactory {
     }
 
     public RootResource createUser(String username, String password) {
-	XmppServerFacade server = new XmppServerFacade();
+	XmppServerProxy server = new XmppServerProxy();
 	if (!server.isOnline()) {
 	    throw new InternalServerException();
 	}

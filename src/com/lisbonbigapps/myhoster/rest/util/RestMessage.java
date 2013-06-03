@@ -1,4 +1,4 @@
-package com.lisbonbigapps.myhoster.rest;
+package com.lisbonbigapps.myhoster.rest.util;
 
 public class RestMessage {
 	public static final String ServerInternalError = "Server internal error! Please try again later!";	

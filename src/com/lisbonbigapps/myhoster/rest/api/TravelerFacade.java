@@ -10,7 +10,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import com.lisbonbigapps.myhoster.rest.RestMediaType;
 import com.lisbonbigapps.myhoster.rest.exception.BadRequestException;
 import com.lisbonbigapps.myhoster.rest.exception.NotFoundException;
 import com.lisbonbigapps.myhoster.rest.exception.UnauthorizedException;
@@ -18,6 +17,7 @@ import com.lisbonbigapps.myhoster.rest.response.factories.TravelerResponseFactor
 import com.lisbonbigapps.myhoster.rest.response.factories.UserResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.util.Authentication;
+import com.lisbonbigapps.myhoster.rest.util.RestMediaType;
 
 @Path("/travelers")
 public class TravelerFacade {

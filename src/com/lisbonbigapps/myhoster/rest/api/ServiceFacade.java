@@ -12,13 +12,13 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import com.lisbonbigapps.myhoster.rest.RestMediaType;
 import com.lisbonbigapps.myhoster.rest.exception.BadRequestException;
 import com.lisbonbigapps.myhoster.rest.exception.NotFoundException;
 import com.lisbonbigapps.myhoster.rest.exception.UnauthorizedException;
 import com.lisbonbigapps.myhoster.rest.response.factories.ServiceResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.util.Authentication;
+import com.lisbonbigapps.myhoster.rest.util.RestMediaType;
 
 @Path("/services")
 public class ServiceFacade {
