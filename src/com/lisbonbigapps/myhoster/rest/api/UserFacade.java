@@ -130,6 +130,67 @@ public class UserFacade {
 	}
     }
 
+    @GET
+    @Path("contacts")
+    @Produces(RestMediaType.Json)
+    public Response getUserContacts() {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	UserResponseFactory factory = new UserResponseFactory();
+	List<RootResource> resources = factory.getUserContacts(this.auth.getUserId());
+
+	if (resources == null) {
+	    throw new NotFoundException();
+	}
+
+	return Response.ok(resources).build();
+    }
+
+    @POST
+    @Path("contacts")
+    @Produces(RestMediaType.Json)
+    public Response getUserContacts(@QueryParam("code") String code, @QueryParam("number") String number) {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	if (code == null || code.equals("") || number == null || number.equals("")) {
+	    throw new BadRequestException();
+	}
+
+	UserResponseFactory factory = new UserResponseFactory();
+	RootResource resource = factory.createUserContact(this.auth.getUserId(), code, number);
+
+	if (resource == null) {
+	    throw new NotFoundException();
+	}
+
+	return Response.ok(resource).build();
+    }
+
+    @DELETE
+    @Path("contacts/{id}")
+    @Produces(RestMediaType.Json)
+    public Response deleteUserContact(@PathParam("id") Long contactId) {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	if (contactId == null) {
+	    throw new BadRequestException();
+	}
+
+	UserResponseFactory factory = new UserResponseFactory();
+	factory.deleteUserContact(this.auth.getUserId(), contactId);
+
+	return Response.ok().build();
+    }
+
     @POST
     @Path("photo")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -140,7 +201,7 @@ public class UserFacade {
 	}
 
 	UserResponseFactory factory = new UserResponseFactory();
-	long code = factory.updatePhoto(this.auth.getUserId(), uploadedInputStream, fileDetail);
+	long code = factory.updateUserPhoto(this.auth.getUserId(), uploadedInputStream, fileDetail);
 
 	if (code == -1) {
 	    throw new InternalServerException();
@@ -159,7 +220,7 @@ public class UserFacade {
 	}
 
 	UserResponseFactory factory = new UserResponseFactory();
-	factory.deletePhoto(this.auth.getUserId());
+	factory.deleteUserPhoto(this.auth.getUserId());
 
 	return Response.ok().build();
     }
@@ -200,7 +261,7 @@ public class UserFacade {
 	}
 
 	UserResponseFactory factory = new UserResponseFactory();
-	factory.uptateStatus(this.auth.getUserId(), status);
+	factory.uptateUserStatus(this.auth.getUserId(), status);
 
 	return Response.ok().build();
     }
@@ -235,7 +296,7 @@ public class UserFacade {
 	}
 
 	UserResponseFactory factory = new UserResponseFactory();
-	RootResource resource = factory.getLocation(this.auth.getUserId());
+	RootResource resource = factory.getUserLocation(this.auth.getUserId());
 	if (resource == null) {
 	    throw new NotFoundException();
 	}
@@ -257,7 +318,7 @@ public class UserFacade {
 	}
 
 	UserResponseFactory factory = new UserResponseFactory();
-	RootResource resource = factory.updateLocation(this.auth.getUserId(), latitude, longitude);
+	RootResource resource = factory.updateUserLocation(this.auth.getUserId(), latitude, longitude);
 	if (resource == null) {
 	    throw new NotFoundException();
 	}

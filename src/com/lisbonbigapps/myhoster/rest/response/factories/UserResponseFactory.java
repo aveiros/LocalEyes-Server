@@ -8,14 +8,17 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.lisbonbigapps.myhoster.database.dao.UserContactDAO;
 import com.lisbonbigapps.myhoster.database.dao.UserDAO;
 import com.lisbonbigapps.myhoster.database.dao.UserFeedbackDAO;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
+import com.lisbonbigapps.myhoster.database.entities.EntityUserContact;
 import com.lisbonbigapps.myhoster.database.entities.EntityUserFeedback;
 import com.lisbonbigapps.myhoster.database.util.DBAccess;
 import com.lisbonbigapps.myhoster.rest.exception.InternalServerException;
 import com.lisbonbigapps.myhoster.rest.response.resources.LocationResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
+import com.lisbonbigapps.myhoster.rest.response.resources.UserContactResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserFeedbackResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserSessionResource;
@@ -95,7 +98,7 @@ public class UserResponseFactory {
 	return userDao.create(user) == -1 ? null : assembleUserResource(user);
     }
 
-    public RootResource getLocation(long userId) {
+    public RootResource getUserLocation(long userId) {
 	UserDAO dao = new UserDAO();
 	EntityUser user = dao.findById(userId);
 
@@ -106,7 +109,59 @@ public class UserResponseFactory {
 	return this.assembleLocationResource(user);
     }
 
-    public RootResource updateLocation(long userId, double latitude, double longitude) {
+    public List<RootResource> getUserContacts(long userId) {
+	UserContactDAO dao = new UserContactDAO();
+	List<EntityUserContact> contacts = dao.findByUserId(userId);
+
+	if (contacts == null) {
+	    return null;
+	}
+
+	return this.assembleUserContactResourceList(contacts);
+    }
+
+    public RootResource createUserContact(long userId, String countryCode, String number) {
+	UserDAO userDao = new UserDAO();
+	EntityUser user = userDao.findById(userId);
+
+	if (user == null || user.getId() == null) {
+	    return null;
+	}
+
+	UserContactDAO userContactDao = new UserContactDAO();
+
+	EntityUserContact contact = new EntityUserContact();
+	contact.setCode(countryCode);
+	contact.setNumber(number);
+	contact.setUser(user);
+
+	long code = userContactDao.create(contact);
+	if (code == -1) {
+	    return null;
+	}
+
+	return this.assembleUserContactResource(contact);
+    }
+
+    public void deleteUserContact(long userId, Long contactId) {
+	UserContactDAO userContactDao = new UserContactDAO();
+	EntityUserContact contact = userContactDao.findById(contactId);
+
+	if (contact == null || contact.getId() == null) {
+	    return;
+	}
+
+	EntityUser user = contact.getUser();
+	if (user == null || user.getId() == null) {
+	    return;
+	}
+
+	if (user.getId() == userId) {
+	    userContactDao.delete(contact);
+	}
+    }
+
+    public RootResource updateUserLocation(long userId, double latitude, double longitude) {
 	UserDAO userDao = new UserDAO();
 	EntityUser user = userDao.findById(userId);
 
@@ -121,7 +176,7 @@ public class UserResponseFactory {
 	return this.assembleLocationResource(user);
     }
 
-    public long updatePhoto(long userId, InputStream uploadedInputStream, FormDataContentDisposition fileDetail) {
+    public long updateUserPhoto(long userId, InputStream uploadedInputStream, FormDataContentDisposition fileDetail) {
 	UserDAO userDao = new UserDAO();
 	EntityUser user = userDao.findById(userId);
 
@@ -142,7 +197,7 @@ public class UserResponseFactory {
 	return code;
     }
 
-    public void deletePhoto(long userId) {
+    public void deleteUserPhoto(long userId) {
 	UserDAO userDao = new UserDAO();
 	EntityUser user = userDao.findById(userId);
 
@@ -154,7 +209,7 @@ public class UserResponseFactory {
 	userDao.update(user);
     }
 
-    public boolean uptateStatus(long userId, boolean status) {
+    public boolean uptateUserStatus(long userId, boolean status) {
 	UserDAO userDao = new UserDAO();
 	EntityUser user = userDao.findById(userId);
 
@@ -230,55 +285,73 @@ public class UserResponseFactory {
     }
 
     private List<RootResource> assembleUserResourceList(List<EntityUser> users) {
-	List<RootResource> r = new ArrayList<RootResource>();
+	List<RootResource> resources = new ArrayList<RootResource>();
 
 	for (EntityUser user : users) {
-	    r.add(this.assembleUserResource(user));
+	    resources.add(this.assembleUserResource(user));
 	}
 
-	return r;
+	return resources;
     }
 
     public UserResource assembleUserResource(EntityUser user) {
-	UserResource r = new UserResource();
-	r.setId(user.getId());
-	r.setName(user.getName());
-	r.setUsername(user.getUsername());
-	String photo = user.getPhoto();
-	r.setPhoto(ServiceSingleton.getInstance().getUserPhotoURL(photo == null ? "none.png" : user.getPhoto()));
-	
-	LocationResource l = new LocationResource();
-	l.setLatitude(user.getLatitude());
-	l.setLongitude(user.getLongitude());
+	UserResource userResource = new UserResource();
+	userResource.setId(user.getId());
+	userResource.setName(user.getName());
+	userResource.setUsername(user.getUsername());
+	userResource.setPhoto(ServiceSingleton.getInstance().getUserPhotoURL(user.getPhoto() == null ? "none.png" : user.getPhoto()));
 
-	r.setLocation(l);
-	return r;
+	LocationResource locationResource = new LocationResource();
+	locationResource.setLatitude(user.getLatitude());
+	locationResource.setLongitude(user.getLongitude());
+
+	userResource.setLocation(locationResource);
+	return userResource;
+    }
+
+    private List<RootResource> assembleUserContactResourceList(List<EntityUserContact> contacts) {
+	List<RootResource> resources = new ArrayList<RootResource>();
+
+	for (EntityUserContact contact : contacts) {
+	    resources.add(this.assembleUserContactResource(contact));
+	}
+
+	return resources;
+    }
+
+    private RootResource assembleUserContactResource(EntityUserContact contact) {
+	UserContactResource resource = new UserContactResource();
+	resource.setId(contact.getId());
+	resource.setNumber(contact.getNumber());
+	resource.setCode(contact.getCode());
+
+	return resource;
     }
 
     private List<RootResource> assembleUserFeedbackResourceList(List<EntityUserFeedback> feedbacks) {
-	List<RootResource> feedbackResourceList = new ArrayList<RootResource>();
+	List<RootResource> resources = new ArrayList<RootResource>();
 
 	for (EntityUserFeedback feedback : feedbacks) {
-	    feedbackResourceList.add(this.assembleUserFeedbackResource(feedback));
+	    resources.add(this.assembleUserFeedbackResource(feedback));
 	}
 
-	return feedbackResourceList;
+	return resources;
     }
 
     public RootResource assembleUserFeedbackResource(EntityUserFeedback feedback) {
-	UserFeedbackResource r = new UserFeedbackResource();
-	r.setText(feedback.getText());
+	UserFeedbackResource resource = new UserFeedbackResource();
+	resource.setText(feedback.getText());
+	resource.setFrom(this.assembleUserResource(feedback.getFrom()));
+	resource.setTo(this.assembleUserResource(feedback.getTo()));
 
-	r.setFrom(this.assembleUserResource(feedback.getFrom()));
-	r.setTo(this.assembleUserResource(feedback.getTo()));
-
-	return r;
+	return resource;
     }
 
     public LocationResource assembleLocationResource(EntityUser user) {
-	LocationResource r = new LocationResource();
-	r.setLatitude(user.getLatitude());
-	r.setLongitude(user.getLongitude());
-	return r;
+	LocationResource resource = new LocationResource();
+	resource.setLatitude(user.getLatitude());
+	resource.setLongitude(user.getLongitude());
+
+	return resource;
     }
 }
