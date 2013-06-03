@@ -1,5 +1,7 @@
 package com.lisbonbigapps.myhoster.rest.api;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -32,7 +34,13 @@ public class TravelerFacade {
 	}
 
 	UserResponseFactory factory = new UserResponseFactory();
-	return Response.ok(factory.getTravelers()).build();
+	List<RootResource> resources = factory.getTravelers();
+
+	if (resources == null) {
+	    throw new NotFoundException();
+	}
+
+	return Response.ok(resources).build();
     }
 
     @GET
@@ -48,7 +56,9 @@ public class TravelerFacade {
 	    throw new BadRequestException();
 	}
 
-	RootResource resource = new TravelerResponseFactory().getTraveler(id);
+	TravelerResponseFactory factory = new TravelerResponseFactory();
+	RootResource resource = factory.getTraveler(id);
+
 	if (resource == null) {
 	    throw new NotFoundException();
 	}

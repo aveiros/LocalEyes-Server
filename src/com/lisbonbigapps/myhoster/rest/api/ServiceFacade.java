@@ -36,7 +36,13 @@ public class ServiceFacade {
 	}
 
 	ServiceResponseFactory factory = new ServiceResponseFactory();
-	return Response.ok(factory.getServices(this.auth.getUserId())).build();
+	List<RootResource> resources = factory.getServices(this.auth.getUserId());
+
+	if (resources == null) {
+	    throw new NotFoundException();
+	}
+
+	return Response.ok(resources).build();
     }
 
     @POST

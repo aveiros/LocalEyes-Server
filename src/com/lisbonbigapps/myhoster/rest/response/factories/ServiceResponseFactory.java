@@ -3,63 +3,76 @@ package com.lisbonbigapps.myhoster.rest.response.factories;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.lisbonbigapps.myhoster.database.dao.ServiceDAO;
+import com.lisbonbigapps.myhoster.database.dao.ServiceFeedbackDAO;
+import com.lisbonbigapps.myhoster.database.dao.UserDAO;
 import com.lisbonbigapps.myhoster.database.entities.EntityService;
 import com.lisbonbigapps.myhoster.database.entities.EntityServiceFeedback;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
-import com.lisbonbigapps.myhoster.database.util.DBAccess;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.ServiceFeedbackResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.ServiceResource;
 
 public class ServiceResponseFactory {
-    public RootResource getService(long userId, Long serviceId) {
-	if (serviceId == null) {
-	    return null;
-	}
-
-	EntityService service = DBAccess.getElement(EntityService.class, "id", String.valueOf(serviceId));
+    public RootResource getService(long userId, long serviceId) {
+	ServiceDAO dao = new ServiceDAO();
+	EntityService service = dao.findById(serviceId);
 
 	if (service == null || service.getId() == null) {
 	    return null;
 	}
 
-	if (service.getHoster().getId() == userId || service.getTravel().getId() == userId) {
-	    return this.assembleServiceResource(service);
+	EntityUser host = service.getHoster();
+	EntityUser traveller = service.getTravel();
+
+	if (host == null || host.getId() == null) {
+	    return null;
 	}
 
-	return null;
+	if (traveller == null || traveller.getId() == null) {
+	    return null;
+	}
+
+	return this.assembleServiceResource(service);
     }
 
     public List<RootResource> getServices(long userId) {
-	String query = "from " + EntityService.class.getSimpleName() + " as service where service.hoster.id = " + userId + " or service.travel.id = " + userId;
+	ServiceDAO serviceDao = new ServiceDAO();
 
-	List<EntityService> entities = DBAccess.getDBItem(EntityService.class, query);
-	List<RootResource> resources = new ArrayList<RootResource>();
+	List<EntityService> services = serviceDao.findByUserId(userId);
 
-	for (EntityService entity : entities) {
-	    resources.add(this.assembleServiceResource(entity));
+	if (services == null) {
+	    return null;
 	}
 
-	return resources;
+	return this.assembleServiceResourceList(services);
     }
 
-    public RootResource createService(long hosterId, long travelerId) {
-	if (hosterId == travelerId) {
+    public RootResource createService(long hostId, long travellerId) {
+	if (hostId == travellerId) {
 	    return null;
 	}
 
-	EntityUser hoster = this.getUserById(hosterId);
-	EntityUser travel = this.getUserById(travelerId);
+	UserDAO userDao = new UserDAO();
+	EntityUser host = userDao.findById(hostId);
+	EntityUser traveller = userDao.findById(travellerId);
 
-	if (hoster == null || hoster.getId() == null || travel == null || travel.getId() == null) {
+	if (host == null || host.getId() == null) {
 	    return null;
 	}
+
+	if (traveller == null || traveller.getId() == null) {
+	    return null;
+	}
+
+	ServiceDAO serviceDAO = new ServiceDAO();
 
 	EntityService service = new EntityService();
-	service.setHoster(hoster);
-	service.setTravel(travel);
+	service.setHoster(host);
+	service.setTravel(traveller);
 
-	DBAccess.saveItem(service);
+	serviceDAO.create(service);
+
 	return this.assembleServiceResource(service);
     }
 
@@ -68,72 +81,112 @@ public class ServiceResponseFactory {
     }
 
     public List<RootResource> getServiceFeedback(long userId, long serviceId) {
-	EntityUser user = this.getUserById(userId);
+	UserDAO userDao = new UserDAO();
+	EntityUser user = userDao.findById(userId);
 	if (user == null || user.getId() == null) {
 	    return null;
 	}
 
-	EntityService service = DBAccess.getElement(EntityService.class, "id", String.valueOf(serviceId));
+	ServiceDAO serviceDao = new ServiceDAO();
+	EntityService service = serviceDao.findById(serviceId);
 	if (service == null || service.getId() == null) {
 	    return null;
 	}
 
-	if (service.getHoster().getId() == userId || service.getTravel().getId() == userId) {
-	    String query = "from " + EntityServiceFeedback.class.getSimpleName() + " as feedback where service.id = " + service.getId();
-	    List<EntityServiceFeedback> feedback = DBAccess.getDBItem(EntityServiceFeedback.class, query);
-	    return this.assembleServiceFeedBackResource(feedback);
+	EntityUser host = service.getHoster();
+	EntityUser traveller = service.getTravel();
+
+	if (host == null || host.getId() == null) {
+	    return null;
+	}
+
+	if (traveller == null || traveller.getId() == null) {
+	    return null;
+	}
+
+	if (host.getId() == userId || traveller.getId() == userId) {
+	    ServiceFeedbackDAO serviceFeedbackDao = new ServiceFeedbackDAO();
+	    List<EntityServiceFeedback> feedbacks = serviceFeedbackDao.findByServiceId(serviceId);
+	    return feedbacks == null ? null : this.assembleServiceFeedBackResourceList(feedbacks);
 	}
 
 	return null;
     }
 
-    public void createServiceFeedback(long userId, long serviceId, String text, double rate) {
-	String query = "from " + EntityService.class.getSimpleName() + " as service where service.hoster.id = " + userId;
+    public RootResource createServiceFeedback(long userId, long serviceId, String text, double rate) {
+	ServiceDAO serviceDao = new ServiceDAO();
+	EntityService service = serviceDao.findById(serviceId);
 
-	EntityService service = DBAccess.getElement(EntityService.class, query);
 	if (service == null || service.getId() == null) {
-	    return;
+	    return null;
 	}
 
-	EntityUser user = DBAccess.getElement(EntityUser.class, "id", String.valueOf(userId));
-	if (user == null || user.getId() == null) {
-	    return;
+	EntityUser host = service.getHoster();
+	EntityUser traveller = service.getTravel();
+	if (host == null || host.getId() == null) {
+	    return null;
 	}
+
+	if (traveller == null || traveller.getId() == null) {
+	    return null;
+	}
+
+	EntityUser user = host.getId() == userId ? host : traveller.getId() == userId ? traveller : null;
+	if (user == null) {
+	    return null;
+	}
+
+	ServiceFeedbackDAO serviceFeedbackDao = new ServiceFeedbackDAO();
 
 	EntityServiceFeedback feedback = new EntityServiceFeedback();
 	feedback.setRate(rate);
 	feedback.setUser(user);
 	feedback.setText(text);
 	feedback.setService(service);
-	DBAccess.saveItem(feedback);
+
+	serviceFeedbackDao.create(feedback);
+
+	return null;
+    }
+
+    private List<RootResource> assembleServiceResourceList(List<EntityService> services) {
+	List<RootResource> r = new ArrayList<RootResource>();
+
+	for (EntityService service : services) {
+	    r.add(this.assembleServiceResource(service));
+	}
+
+	return r;
     }
 
     private RootResource assembleServiceResource(EntityService service) {
 	UserResponseFactory userFactory = new UserResponseFactory();
 
-	ServiceResource serviceResource = new ServiceResource();
-	serviceResource.setId(service.getId());
-	serviceResource.setHoster(userFactory.assembleUserResource(service.getHoster()));
-	serviceResource.setTraveller(userFactory.assembleUserResource(service.getTravel()));
+	ServiceResource r = new ServiceResource();
+	r.setId(service.getId());
+	r.setHoster(userFactory.assembleUserResource(service.getHoster()));
+	r.setTraveller(userFactory.assembleUserResource(service.getTravel()));
 
-	return serviceResource;
+	return r;
     }
 
-    private List<RootResource> assembleServiceFeedBackResource(List<EntityServiceFeedback> feedback) {
+    private List<RootResource> assembleServiceFeedBackResourceList(List<EntityServiceFeedback> feedbacks) {
 	List<RootResource> resources = new ArrayList<RootResource>();
 
-	for (EntityServiceFeedback f : feedback) {
-	    ServiceFeedbackResource r = new ServiceFeedbackResource();
-	    r.setRate(f.getRate());
-	    r.setText(f.getText());
-	    r.setUser(new UserResponseFactory().assembleUserResource(f.getUser()));
-	    resources.add(r);
+	for (EntityServiceFeedback feedback : feedbacks) {
+	    resources.add(this.assembleServiceFeedBackResource(feedback));
 	}
 
 	return resources;
     }
 
-    private EntityUser getUserById(long userId) {
-	return DBAccess.getElement(EntityUser.class, "id", String.valueOf(userId));
+    private RootResource assembleServiceFeedBackResource(EntityServiceFeedback feedback) {
+	ServiceFeedbackResource r = new ServiceFeedbackResource();
+
+	r.setRate(feedback.getRate());
+	r.setText(feedback.getText());
+	r.setUser(new UserResponseFactory().assembleUserResource(feedback.getUser()));
+
+	return r;
     }
 }

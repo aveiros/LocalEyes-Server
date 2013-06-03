@@ -13,23 +13,35 @@ public class ServiceSingleton {
 	return instance;
     }
 
-    public String getRootLocation() {
+    public String getRootURL() {
 	return "http://localhost:8080";
     }
 
-    public String getServiceLocation() {
-	return this.getRootLocation() + "/hoster";
+    public String getServiceURL() {
+	return this.getRootURL() + "/local";
     }
 
-    public String getUserThumbnailLocation() {
-	return this.getServiceLocation() + "/user/photo";
+    public String getImagesURL() {
+	return this.getServiceURL() + "/images";
     }
 
-    public String getUserPhoto(String photo) {
-	return this.getUserThumbnailLocation() + "/" + photo;
+    public String getUserPhotoURL() {
+	return this.getImagesURL() + "/users/photos";
     }
 
-    public String getUserDefaultPhoto() {
-	return this.getUserThumbnailLocation() + "/none.png";
+    public String getUserPhotoURL(String fileName) {
+	return this.getUserPhotoURL() + "/" + fileName;
+    }
+
+    public String getUserNoPhotoURI() {
+	return this.getUserPhotoURL() + "/none.jpg";
+    }
+
+    public String buildBaseURI() {
+	return "c://eclipse-juno//local";
+    }
+
+    public String buildUserPhotoURI(String fileName) {
+	return String.format("%s//users//photos//%s", this.buildBaseURI(), fileName);
     }
 }

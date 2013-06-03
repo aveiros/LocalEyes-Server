@@ -1,28 +1,31 @@
 package com.lisbonbigapps.myhoster.rest.response.factories;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.lisbonbigapps.myhoster.database.dao.UserDAO;
+import com.lisbonbigapps.myhoster.database.dao.UserFeedbackDAO;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
 import com.lisbonbigapps.myhoster.database.entities.EntityUserFeedback;
-import com.lisbonbigapps.myhoster.database.resources.UserResourceFactory;
 import com.lisbonbigapps.myhoster.database.util.DBAccess;
+import com.lisbonbigapps.myhoster.rest.exception.InternalServerException;
 import com.lisbonbigapps.myhoster.rest.response.resources.LocationResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserFeedbackResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserSessionResource;
 import com.lisbonbigapps.myhoster.rest.util.ServiceSingleton;
+import com.sun.jersey.core.header.FormDataContentDisposition;
 
 public class UserResponseFactory {
     public RootResource getUser(long id) {
-	EntityUser user = null;
-
-	try {
-	    user = UserResourceFactory.getById(id);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
+	UserDAO dao = new UserDAO();
+	EntityUser user = dao.findById(id);
 
 	if (user == null || user.getId() == null) {
 	    return null;
@@ -32,88 +35,47 @@ public class UserResponseFactory {
     }
 
     public RootResource getUser(String username, String password) {
-	if (username == null || password == null) {
+	UserDAO dao = new UserDAO();
+	EntityUser user = dao.findByUsernameAndPassword(username, password);
+
+	if (user == null || user.getId() == null) {
 	    return null;
 	}
 
-	EntityUser u = null;
-
-	try {
-	    u = UserResourceFactory.getUser(username, password);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-
-	if (u == null || u.getId() == null) {
-	    return null;
-	}
-
-	return assembleUserResource(u);
-    }
-
-    public List<RootResource> getUsers() {
-	List<RootResource> users = new ArrayList<RootResource>();
-
-	try {
-	    List<EntityUser> entities = UserResourceFactory.getList();
-	    for (EntityUser entityUser : entities) {
-		users.add(assembleUserResource(entityUser));
-	    }
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-
-	return users;
-    }
-
-    public List<RootResource> getHosters() {
-	List<RootResource> hosters = new ArrayList<RootResource>();
-
-	try {
-	    List<EntityUser> entities = UserResourceFactory.getList();
-	    for (EntityUser entityUser : entities) {
-		if (entityUser.isHosting()) {
-		    hosters.add(assembleUserResource(entityUser));
-		}
-	    }
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-
-	return hosters;
-    }
-
-    public List<RootResource> getTravelers() {
-	List<RootResource> travelers = new ArrayList<RootResource>();
-
-	try {
-	    List<EntityUser> entities = UserResourceFactory.getList();
-	    for (EntityUser entityUser : entities) {
-		if (!entityUser.isHosting()) {
-		    travelers.add(assembleUserResource(entityUser));
-		}
-	    }
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-
-	return travelers;
+	return assembleUserResource(user);
     }
 
     public RootResource getUser(String username) {
-	EntityUser u = null;
+	UserDAO dao = new UserDAO();
+	EntityUser user = dao.findByUsername(username);
 
-	try {
-	    u = UserResourceFactory.getUser(username);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-
-	if (u == null || u.getId() == null) {
+	if (user == null || user.getId() == null) {
 	    return null;
 	}
 
-	return assembleUserResource(u);
+	return assembleUserResource(user);
+    }
+
+    public List<RootResource> getHosters() {
+	UserDAO dao = new UserDAO();
+	List<EntityUser> users = dao.findByStatus(true);
+
+	if (users == null) {
+	    return null;
+	}
+
+	return this.assembleUserResourceList(users);
+    }
+
+    public List<RootResource> getTravelers() {
+	UserDAO dao = new UserDAO();
+	List<EntityUser> users = dao.findByStatus(false);
+
+	if (users == null) {
+	    return null;
+	}
+
+	return this.assembleUserResourceList(users);
     }
 
     public RootResource createUserSession(UserResource u) {
@@ -123,79 +85,104 @@ public class UserResponseFactory {
     }
 
     public RootResource createUser(String username, String password) {
+	UserDAO userDao = new UserDAO();
+
 	EntityUser user = new EntityUser();
+	user.setName("");
 	user.setUsername(username);
 	user.setPassword(password);
-	DBAccess.saveItem(user);
-	return assembleUserResource(user);
+
+	return userDao.create(user) == -1 ? null : assembleUserResource(user);
     }
 
     public RootResource getLocation(long userId) {
-	LocationResource location = null;
-	EntityUser user = this.getUserEntity(userId);
+	UserDAO dao = new UserDAO();
+	EntityUser user = dao.findById(userId);
 
-	if (user != null && user.getId() != null) {
-	    location = new LocationResource();
-	    location.setLatitude(user.getLatitude());
-	    location.setLongitude(user.getLongitude());
+	if (user == null || user.getId() == null) {
+	    return null;
 	}
 
-	return location;
+	return this.assembleLocationResource(user);
     }
 
     public RootResource updateLocation(long userId, double latitude, double longitude) {
-	LocationResource location = null;
-	EntityUser user = this.getUserEntity(userId);
-
-	if (user != null && user.getId() != null) {
-	    location = new LocationResource();
-	    location.setLatitude(latitude);
-	    location.setLongitude(longitude);
-	    user.setLatitude(latitude);
-	    user.setLongitude(longitude);
-	    DBAccess.updateItem(user);
-	}
-
-	return location;
-    }
-
-    public boolean updateHostingStatus(long userId, boolean status) {
-	EntityUser user = this.getUserEntity(userId);
-	if (user != null && user.getId() != null) {
-	    user.setHosting(status);
-	    DBAccess.updateItem(user);
-	    return true;
-	}
-
-	return false;
-    }
-
-    private EntityUser getUserEntity(long userId) {
-	EntityUser user = null;
-
-	try {
-	    user = UserResourceFactory.getById(userId);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
+	UserDAO userDao = new UserDAO();
+	EntityUser user = userDao.findById(userId);
 
 	if (user == null || user.getId() == null) {
 	    return null;
 	}
 
-	return user;
+	user.setLatitude(latitude);
+	user.setLongitude(longitude);
+	DBAccess.updateItem(user);
+
+	return this.assembleLocationResource(user);
+    }
+
+    public long updatePhoto(long userId, InputStream uploadedInputStream, FormDataContentDisposition fileDetail) {
+	UserDAO userDao = new UserDAO();
+	EntityUser user = userDao.findById(userId);
+
+	if (user == null || user.getId() == null) {
+	    return -1;
+	}
+
+	String fileName = String.format("%d.png", user.getId());
+	String fileURI = ServiceSingleton.getInstance().buildUserPhotoURI(fileName);
+
+	long code = saveFile(uploadedInputStream, fileURI);
+
+	if (code != -1) {
+	    user.setPhoto(fileName);
+	    userDao.update(user);
+	}
+
+	return code;
+    }
+
+    public void deletePhoto(long userId) {
+	UserDAO userDao = new UserDAO();
+	EntityUser user = userDao.findById(userId);
+
+	if (user == null || user.getId() == null) {
+	    throw new InternalServerException();
+	}
+
+	user.setPhoto(null);
+	userDao.update(user);
+    }
+
+    public boolean uptateStatus(long userId, boolean status) {
+	UserDAO userDao = new UserDAO();
+	EntityUser user = userDao.findById(userId);
+
+	if (user == null || user.getId() == null) {
+	    return false;
+	}
+
+	user.setHosting(status);
+	DBAccess.updateItem(user);
+	return true;
     }
 
     public List<RootResource> getUserFeedback(long userId) {
-	EntityUser user = this.getUserEntity(userId);
+	UserDAO userDao = new UserDAO();
+	EntityUser user = userDao.findById(userId);
 
 	if (user == null || user.getId() == null) {
 	    return null;
 	}
 
-	String query = "from " + EntityUserFeedback.class.getSimpleName() + " as feedback where feedback.to.id = " + userId;
-	List<EntityUserFeedback> feedbacks = DBAccess.getDBItem(EntityUserFeedback.class, query);
-	return this.assembleUserFeedbackListResource(feedbacks);
+	UserFeedbackDAO userFeedbackDao = new UserFeedbackDAO();
+	List<EntityUserFeedback> feedbacks = userFeedbackDao.findByUserId(userId);
+
+	if (feedbacks == null) {
+	    return null;
+	}
+
+	return this.assembleUserFeedbackResourceList(feedbacks);
     }
 
     public RootResource createUserFeedback(long fromUserId, long toUserId, String text) {
@@ -203,8 +190,9 @@ public class UserResponseFactory {
 	    return null;
 	}
 
-	EntityUser fromUser = this.getUserEntity(fromUserId);
-	EntityUser toUser = this.getUserEntity(toUserId);
+	UserDAO userDao = new UserDAO();
+	EntityUser fromUser = userDao.findById(fromUserId);
+	EntityUser toUser = userDao.findById(toUserId);
 
 	if (fromUser != null && fromUser.getId() != null && toUser != null && toUser.getId() != null) {
 	    EntityUserFeedback feedback = new EntityUserFeedback();
@@ -218,7 +206,56 @@ public class UserResponseFactory {
 	return null;
     }
 
-    private List<RootResource> assembleUserFeedbackListResource(List<EntityUserFeedback> feedbacks) {
+    private long saveFile(InputStream uploadedInputStream, String uploadedFileLocation) {
+	try {
+	    OutputStream out = new FileOutputStream(new File(uploadedFileLocation));
+	    int read = 0;
+	    byte[] bytes = new byte[1024];
+
+	    out = new FileOutputStream(new File(uploadedFileLocation));
+
+	    while ((read = uploadedInputStream.read(bytes)) != -1) {
+		out.write(bytes, 0, read);
+	    }
+
+	    out.flush();
+	    out.close();
+
+	    return 1;
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+
+	return -1;
+    }
+
+    private List<RootResource> assembleUserResourceList(List<EntityUser> users) {
+	List<RootResource> r = new ArrayList<RootResource>();
+
+	for (EntityUser user : users) {
+	    r.add(this.assembleUserResource(user));
+	}
+
+	return r;
+    }
+
+    public UserResource assembleUserResource(EntityUser user) {
+	UserResource r = new UserResource();
+	r.setId(user.getId());
+	r.setName(user.getName());
+	r.setUsername(user.getUsername());
+	String photo = user.getPhoto();
+	r.setPhoto(ServiceSingleton.getInstance().getUserPhotoURL(photo == null ? "none.png" : user.getPhoto()));
+	
+	LocationResource l = new LocationResource();
+	l.setLatitude(user.getLatitude());
+	l.setLongitude(user.getLongitude());
+
+	r.setLocation(l);
+	return r;
+    }
+
+    private List<RootResource> assembleUserFeedbackResourceList(List<EntityUserFeedback> feedbacks) {
 	List<RootResource> feedbackResourceList = new ArrayList<RootResource>();
 
 	for (EntityUserFeedback feedback : feedbacks) {
@@ -238,18 +275,10 @@ public class UserResponseFactory {
 	return r;
     }
 
-    public UserResource assembleUserResource(EntityUser user) {
-	UserResource r = new UserResource();
-	r.setId(user.getId());
-	r.setName(user.getName());
-	r.setUsername(user.getUsername());
-	r.setPhoto(ServiceSingleton.getInstance().getUserDefaultPhoto());
-
-	LocationResource l = new LocationResource();
-	l.setLatitude(user.getLatitude());
-	l.setLongitude(user.getLongitude());
-
-	r.setLocation(l);
+    public LocationResource assembleLocationResource(EntityUser user) {
+	LocationResource r = new LocationResource();
+	r.setLatitude(user.getLatitude());
+	r.setLongitude(user.getLongitude());
 	return r;
     }
 }

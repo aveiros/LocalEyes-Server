@@ -52,7 +52,8 @@ public class HosterFacade {
 	    throw new BadRequestException();
 	}
 
-	RootResource resource = new HosterResponseFactory().getHoster(id);
+	HosterResponseFactory factory = new HosterResponseFactory();
+	RootResource resource = factory.getHoster(id);
 	if (resource == null) {
 	    throw new NotFoundException();
 	}
@@ -78,9 +79,4 @@ public class HosterFacade {
 	double distance = LatLngTool.distance(point1, point2, LengthUnit.METER);
 	return Response.ok((int) distance).build();
     }
-
-    /*
-     * @QueryParam("latitude") Double latitude, @QueryParam("longitude") Double
-     * longitude
-     */
 }

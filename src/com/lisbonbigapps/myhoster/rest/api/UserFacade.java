@@ -1,9 +1,12 @@
 package com.lisbonbigapps.myhoster.rest.api;
 
+import java.io.InputStream;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -12,6 +15,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.lisbonbigapps.myhoster.rest.RestMediaType;
@@ -26,9 +30,10 @@ import com.lisbonbigapps.myhoster.rest.response.factories.XmppResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserSessionResource;
-import com.lisbonbigapps.myhoster.rest.response.resources.XmppUserResource;
 import com.lisbonbigapps.myhoster.rest.util.Authentication;
 import com.lisbonbigapps.myhoster.xmpp.XmppServerFacade;
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataParam;
 
 @Path("/user")
 public class UserFacade {
@@ -45,12 +50,13 @@ public class UserFacade {
 	    throw new UnauthorizedException();
 	}
 
-	RootResource userResource = new UserResponseFactory().getUser(this.auth.getUserId());
-	if (userResource == null) {
+	UserResponseFactory factory = new UserResponseFactory();
+	RootResource resource = factory.getUser(this.auth.getUserId());
+	if (resource == null) {
 	    throw new NotFoundException();
 	}
 
-	return Response.ok(userResource).build();
+	return Response.ok(resource).build();
     }
 
     @GET
@@ -59,15 +65,23 @@ public class UserFacade {
     public Response getLogin(@QueryParam("username") String username, @QueryParam("password") String password) throws Exception {
 	HttpSession session = req.getSession(true);
 
-	UserResponseFactory userFactory = new UserResponseFactory();
-	RootResource userResource = userFactory.getUser(username, password);
+	if (username == null || username.equals("")) {
+	    throw new BadRequestException();
+	}
 
-	if (userResource == null) {
+	if (password == null || password.equals("")) {
+	    throw new BadRequestException();
+	}
+
+	UserResponseFactory factory = new UserResponseFactory();
+	RootResource resource = factory.getUser(username, password);
+
+	if (resource == null) {
 	    return Response.ok(new MessageResponseFactory().createError(RestMessage.UserOrPasswordInvalid)).build();
 	}
 
-	session.setAttribute("SESSION_OBJECT", userFactory.createUserSession((UserResource) userResource));
-	return Response.ok(userResource).build();
+	session.setAttribute("SESSION_OBJECT", factory.createUserSession((UserResource) resource));
+	return Response.ok(resource).build();
     }
 
     @GET
@@ -107,12 +121,47 @@ public class UserFacade {
 	RootResource hostUser = userFactory.getUser(usr);
 
 	if (xmppUser == null || hostUser == null) {
-	    return Response.ok(new MessageResponseFactory().createError("User already exists")).build();
+	    MessageResponseFactory msgFactory = new MessageResponseFactory();
+	    return Response.ok(msgFactory.createError("User already exists")).build();
 	} else {
 	    xmppFactory.createUser(usr, pwd);
 	    userFactory.createUser(usr, pwd);
 	    return Response.ok().build();
 	}
+    }
+
+    @POST
+    @Path("photo")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response updatePhoto(@FormDataParam("file") InputStream uploadedInputStream, @FormDataParam("file") FormDataContentDisposition fileDetail) {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	UserResponseFactory factory = new UserResponseFactory();
+	long code = factory.updatePhoto(this.auth.getUserId(), uploadedInputStream, fileDetail);
+
+	if (code == -1) {
+	    throw new InternalServerException();
+	}
+
+	return Response.ok().build();
+    }
+
+    @DELETE
+    @Path("photo")
+    @Produces(RestMediaType.Json)
+    public Response deletePhoto() {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	UserResponseFactory factory = new UserResponseFactory();
+	factory.deletePhoto(this.auth.getUserId());
+
+	return Response.ok().build();
     }
 
     @GET
@@ -128,7 +177,8 @@ public class UserFacade {
 	    throw new BadRequestException();
 	}
 
-	RootResource userResource = new UserResponseFactory().getUser(id);
+	UserResponseFactory factory = new UserResponseFactory();
+	RootResource userResource = factory.getUser(id);
 	if (userResource == null) {
 	    throw new NotFoundException();
 	}
@@ -150,7 +200,7 @@ public class UserFacade {
 	}
 
 	UserResponseFactory factory = new UserResponseFactory();
-	factory.updateHostingStatus(this.auth.getUserId(), status);
+	factory.uptateStatus(this.auth.getUserId(), status);
 
 	return Response.ok().build();
     }
@@ -171,7 +221,8 @@ public class UserFacade {
 	boolean xmppHasUser = xmppServer.isUserRegistered(userName);
 	boolean hostHasUser = new UserResponseFactory().getUser(userName) == null ? false : true;
 
-	return Response.ok(new MessageResponseFactory().createMessage(String.valueOf(hostHasUser || xmppHasUser))).build();
+	MessageResponseFactory factory = new MessageResponseFactory();
+	return Response.ok(factory.createMessage(String.valueOf(hostHasUser || xmppHasUser))).build();
     }
 
     @GET
@@ -183,12 +234,13 @@ public class UserFacade {
 	    throw new UnauthorizedException();
 	}
 
-	RootResource geoResource = new UserResponseFactory().getLocation(this.auth.getUserId());
-	if (geoResource == null) {
+	UserResponseFactory factory = new UserResponseFactory();
+	RootResource resource = factory.getLocation(this.auth.getUserId());
+	if (resource == null) {
 	    throw new NotFoundException();
 	}
 
-	return Response.ok(geoResource).build();
+	return Response.ok(resource).build();
     }
 
     @PUT
@@ -204,7 +256,8 @@ public class UserFacade {
 	    throw new BadRequestException();
 	}
 
-	RootResource resource = new UserResponseFactory().updateLocation(this.auth.getUserId(), latitude, longitude);
+	UserResponseFactory factory = new UserResponseFactory();
+	RootResource resource = factory.updateLocation(this.auth.getUserId(), latitude, longitude);
 	if (resource == null) {
 	    throw new NotFoundException();
 	}
