@@ -3,8 +3,6 @@ package com.lisbonbigapps.myhoster.rest.util;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import com.lisbonbigapps.myhoster.rest.response.resources.UserSessionResource;
-
 public class Authentication {
     final String sessionObjName = "SESSION_OBJECT";
     HttpServletRequest httpRequest;
@@ -17,7 +15,7 @@ public class Authentication {
     }
 
     public boolean hasUserSession() {
-	UserSessionResource userSession = this.getUserSession();
+	UserSession userSession = this.getUserSession();
 	return userSession == null ? false : true;
     }
 
@@ -25,14 +23,19 @@ public class Authentication {
 	this.getSession().removeAttribute(sessionObjName);
     }
 
+    public void storeUserSession(long userId) {
+	UserSession userSession = new UserSession(userId);
+	this.getSession().setAttribute(sessionObjName, userSession);
+    }
+
     public long getUserId() {
-	UserSessionResource userSession = this.getUserSession();
+	UserSession userSession = this.getUserSession();
 	return userSession.getUserId();
     }
 
-    private UserSessionResource getUserSession() {
+    private UserSession getUserSession() {
 	Object sessionObj = this.getSession().getAttribute(sessionObjName);
-	return (UserSessionResource) sessionObj;
+	return (UserSession) sessionObj;
     }
 
     private HttpSession getSession() {
@@ -45,5 +48,17 @@ public class Authentication {
 
     public void setHttpRequest(HttpServletRequest httpRequest) {
 	this.httpRequest = httpRequest;
+    }
+
+    private class UserSession {
+	long userId;
+
+	public UserSession(long userId) {
+	    this.userId = userId;
+	}
+
+	public long getUserId() {
+	    return userId;
+	}
     }
 }

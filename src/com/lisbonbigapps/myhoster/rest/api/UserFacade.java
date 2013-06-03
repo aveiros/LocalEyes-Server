@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -19,7 +18,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.lisbonbigapps.myhoster.rest.RestMediaType;
-import com.lisbonbigapps.myhoster.rest.RestMessage;
 import com.lisbonbigapps.myhoster.rest.exception.BadRequestException;
 import com.lisbonbigapps.myhoster.rest.exception.InternalServerException;
 import com.lisbonbigapps.myhoster.rest.exception.NotFoundException;
@@ -29,7 +27,6 @@ import com.lisbonbigapps.myhoster.rest.response.factories.UserResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.factories.XmppResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserResource;
-import com.lisbonbigapps.myhoster.rest.response.resources.UserSessionResource;
 import com.lisbonbigapps.myhoster.rest.util.Authentication;
 import com.lisbonbigapps.myhoster.xmpp.XmppServerFacade;
 import com.sun.jersey.core.header.FormDataContentDisposition;
@@ -63,7 +60,7 @@ public class UserFacade {
     @Path("login")
     @Produces(RestMediaType.Json)
     public Response getLogin(@QueryParam("username") String username, @QueryParam("password") String password) throws Exception {
-	HttpSession session = req.getSession(true);
+	this.auth.setHttpRequest(this.req);
 
 	if (username == null || username.equals("")) {
 	    throw new BadRequestException();
@@ -74,13 +71,13 @@ public class UserFacade {
 	}
 
 	UserResponseFactory factory = new UserResponseFactory();
-	RootResource resource = factory.getUser(username, password);
+	UserResource resource = (UserResource) factory.getUser(username, password);
 
 	if (resource == null) {
-	    return Response.ok(new MessageResponseFactory().createError(RestMessage.UserOrPasswordInvalid)).build();
+	    throw new NotFoundException();
 	}
 
-	session.setAttribute("SESSION_OBJECT", factory.createUserSession((UserResource) resource));
+	this.auth.storeUserSession(resource.getId());
 	return Response.ok(resource).build();
     }
 
@@ -88,13 +85,13 @@ public class UserFacade {
     @Path("logout")
     @Produces(RestMediaType.Json)
     public Response getLogout() throws Exception {
-	HttpSession session = req.getSession(true);
-	UserSessionResource userSession = (UserSessionResource) session.getAttribute("SESSION_OBJECT");
-	session.removeAttribute("SESSION_OBJECT");
+	this.auth.setHttpRequest(this.req);
+	boolean hadSession = this.auth.hasUserSession();
+	this.auth.clearUserSession();
 
 	MessageResponseFactory factory = new MessageResponseFactory();
-	RootResource logoutResource = factory.createMessage(userSession == null ? "User has to perform a login!" : "User logged out successfully!");
-	return Response.ok(logoutResource).build();
+	RootResource resource = factory.createMessage(hadSession ? "User has to perform a login!" : "User logged out successfully!");
+	return Response.ok(resource).build();
     }
 
     @POST

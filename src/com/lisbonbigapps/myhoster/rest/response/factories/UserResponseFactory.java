@@ -21,7 +21,6 @@ import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserContactResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserFeedbackResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserResource;
-import com.lisbonbigapps.myhoster.rest.response.resources.UserSessionResource;
 import com.lisbonbigapps.myhoster.rest.util.ServiceSingleton;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 
@@ -79,12 +78,6 @@ public class UserResponseFactory {
 	}
 
 	return this.assembleUserResourceList(users);
-    }
-
-    public RootResource createUserSession(UserResource u) {
-	UserSessionResource r = new UserSessionResource();
-	r.setUserId(u.getId());
-	return r;
     }
 
     public RootResource createUser(String username, String password) {
