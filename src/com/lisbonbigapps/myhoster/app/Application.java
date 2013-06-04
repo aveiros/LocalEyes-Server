@@ -24,7 +24,7 @@ public class Application {
 	}
 
 	String file = "application.properties";
-	FileInputStream in = new FileInputStream(path + "//" + file);
+	FileInputStream in = new FileInputStream(path + "//conf//" + file);
 	this.properties.load(in);
 
 	System.out.println(this.properties);
@@ -88,6 +88,11 @@ public class Application {
 	return host;
     }
 
+    public String getXmppServerPort() {
+	String host = this.getProperty("XMPP_SERVER_PORT");
+	return host;
+    }
+
     public String getXmppServerXmlRpcHost() {
 	String port = this.getProperty("XMPP_SERVER_XMLRPC_HOST");
 	return port;
@@ -102,5 +107,9 @@ public class Application {
 	String host = this.getXmppServerXmlRpcHost();
 	String port = this.getXmppServerXmlRpcPort();
 	return "http://" + host + ":" + port;
+    }
+
+    public Properties getProperties() {
+	return properties;
     }
 }

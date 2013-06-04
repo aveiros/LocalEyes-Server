@@ -5,7 +5,7 @@
 
 		<!-- Database connection settings -->
 		<property name="hibernate.connection.driver_class">org.apache.derby.jdbc.EmbeddedDriver</property>
-		<property name="hibernate.connection.url">jdbc:derby:hostDB;create=true</property>
+		<property name="hibernate.connection.url">jdbc:derby:localDB;create=true</property>
 		<property name="hibernate.connection.username">test</property>
 		<property name="hibernate.connection.password">test</property>
 
