@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.lisbonbigapps.myhoster.app.Application;
 import com.lisbonbigapps.myhoster.database.dao.UserContactDAO;
 import com.lisbonbigapps.myhoster.database.dao.UserDAO;
 import com.lisbonbigapps.myhoster.database.dao.UserFeedbackDAO;
@@ -21,7 +22,6 @@ import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserContactResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserFeedbackResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserResource;
-import com.lisbonbigapps.myhoster.rest.util.ServiceSingleton;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 
 public class UserResponseFactory {
@@ -178,7 +178,7 @@ public class UserResponseFactory {
 	}
 
 	String fileName = String.format("%d.png", user.getId());
-	String fileURI = ServiceSingleton.getInstance().buildUserPhotoURI(fileName);
+	String fileURI = Application.getInstance().buildUserPhotoStorageURI(fileName);
 
 	long code = saveFile(uploadedInputStream, fileURI);
 
@@ -292,7 +292,7 @@ public class UserResponseFactory {
 	userResource.setId(user.getId());
 	userResource.setName(user.getName());
 	userResource.setUsername(user.getUsername());
-	userResource.setPhoto(ServiceSingleton.getInstance().getUserPhotoURL(user.getPhoto() == null ? "none.png" : user.getPhoto()));
+	userResource.setPhoto(user.getPhoto() == null ? Application.getInstance().getUserNoPhotoURI() : Application.getInstance().getUserPhotoURL(user.getPhoto()));
 
 	LocationResource locationResource = new LocationResource();
 	locationResource.setLatitude(user.getLatitude());
