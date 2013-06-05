@@ -1,5 +1,7 @@
 package com.lisbonbigapps.myhoster.rest.api;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -9,9 +11,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import com.javadocmd.simplelatlng.LatLng;
-import com.javadocmd.simplelatlng.LatLngTool;
-import com.javadocmd.simplelatlng.util.LengthUnit;
 import com.lisbonbigapps.myhoster.rest.exception.BadRequestException;
 import com.lisbonbigapps.myhoster.rest.exception.NotFoundException;
 import com.lisbonbigapps.myhoster.rest.exception.UnauthorizedException;
@@ -64,19 +63,23 @@ public class HosterFacade {
     @GET
     @Path("find")
     @Produces(RestMediaType.Json)
-    public Response getHosterUsingRange(@QueryParam("range") Long range) throws Exception {
+    public Response getHosterUsingRange(@QueryParam("latitude") Double latitude, @QueryParam("longitude") Double longitude, @QueryParam("distance") Double distance) throws Exception {
 	this.auth.setHttpRequest(this.request);
 	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
 	}
 
-	if (range == null) {
+	if (distance == null) {
 	    throw new BadRequestException();
 	}
 
-	LatLng point1 = new LatLng(32.666933, -16.924055);
-	LatLng point2 = new LatLng(32.666933, -16.954055);
-	double distance = LatLngTool.distance(point1, point2, LengthUnit.METER);
-	return Response.ok((int) distance).build();
+	HosterResponseFactory factory = new HosterResponseFactory();
+	List<RootResource> resources = factory.getHostsByDistance(this.auth.getUserId(), latitude, longitude, distance);
+
+	if (resources == null) {
+	    throw new NotFoundException();
+	}
+
+	return Response.ok(resources).build();
     }
 }

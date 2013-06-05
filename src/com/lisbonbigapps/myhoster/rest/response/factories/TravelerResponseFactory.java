@@ -1,11 +1,8 @@
 package com.lisbonbigapps.myhoster.rest.response.factories;
 
-import com.lisbonbigapps.myhoster.app.Application;
 import com.lisbonbigapps.myhoster.database.dao.UserDAO;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
-import com.lisbonbigapps.myhoster.rest.response.resources.LocationResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
-import com.lisbonbigapps.myhoster.rest.response.resources.UserResource;
 
 public class TravelerResponseFactory {
     public RootResource getTraveler(long id) {
@@ -20,18 +17,7 @@ public class TravelerResponseFactory {
     }
 
     private RootResource assembleTravelerResource(EntityUser user) {
-	UserResource r = new UserResource();
-	r.setId(user.getId());
-	r.setName(user.getName());
-	r.setUsername(user.getUsername());
-	r.setPhoto(Application.getInstance().getUserNoPhotoURI());
-
-	LocationResource l = new LocationResource();
-	l.setLatitude(user.getLatitude());
-	l.setLongitude(user.getLongitude());
-
-	r.setLocation(l);
-
-	return r;
+	UserResponseFactory factory = new UserResponseFactory();
+	return factory.assembleUserResource(user);
     }
 }

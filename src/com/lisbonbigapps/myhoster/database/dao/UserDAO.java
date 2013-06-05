@@ -1,6 +1,7 @@
 package com.lisbonbigapps.myhoster.database.dao;
 
 import java.util.List;
+import java.util.Locale;
 
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
 import com.lisbonbigapps.myhoster.database.util.DBAccess;
@@ -21,10 +22,21 @@ public class UserDAO extends GenericDAO<EntityUser> {
 	String fquery = String.format(query, this.getType().getSimpleName(), username, password);
 	return DBAccess.getElement(this.getType(), fquery);
     }
-    
+
     public List<EntityUser> findByStatus(boolean isHosting) {
 	String query = "from %s as user where user.hosting = %b";
 	String fquery = String.format(query, this.getType().getSimpleName(), isHosting);
+	return DBAccess.getDBItem(this.getType(), fquery);
+    }
+
+    public List<EntityUser> findByLocation(double minLat, double maxLat, double minLong, double maxLong) {
+	String _minLat = String.format(Locale.US, "%f", minLat);
+	String _maxLat = String.format(Locale.US, "%f", maxLat);
+	String _minLong = String.format(Locale.US, "%f", minLong);
+	String _maxLong = String.format(Locale.US, "%f", maxLong);
+	
+	String query = "from %s as user where user.latitude > %s and user.latitude < %s and user.longitude > %s and user.longitude < %s";
+	String fquery = String.format(query, this.getType().getSimpleName(), _minLat, _maxLat, _minLong, _maxLong);
 	return DBAccess.getDBItem(this.getType(), fquery);
     }
 }
