@@ -2,6 +2,7 @@ package com.lisbonbigapps.myhoster.rest.response.resources;
 
 public class ServiceResource extends RootResource {
     long id;
+    String status;
     UserResource hoster;
     UserResource traveller;
 
@@ -11,6 +12,14 @@ public class ServiceResource extends RootResource {
 
     public void setId(long id) {
 	this.id = id;
+    }
+
+    public String getStatus() {
+	return status;
+    }
+
+    public void setStatus(String status) {
+	this.status = status;
     }
 
     public UserResource getHoster() {

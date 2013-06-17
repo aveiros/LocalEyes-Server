@@ -15,4 +15,16 @@ public class ServiceDAO extends GenericDAO<EntityService> {
 	String fquery = String.format(query, this.getType().getSimpleName(), userId, userId);
 	return DBAccess.getDBItem(this.getType(), fquery);
     }
+
+    public List<EntityService> findByHostId(long userId) {
+	String query = "from %s as service where service.hoster.id = %d";
+	String fquery = String.format(query, this.getType().getSimpleName(), userId);
+	return DBAccess.getDBItem(this.getType(), fquery);
+    }
+
+    public List<EntityService> findByTravellerId(long userId) {
+	String query = "from %s as service where service.travel.id = %d";
+	String fquery = String.format(query, this.getType().getSimpleName(), userId);
+	return DBAccess.getDBItem(this.getType(), fquery);
+    }
 }

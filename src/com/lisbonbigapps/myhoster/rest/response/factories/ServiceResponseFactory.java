@@ -8,6 +8,7 @@ import com.lisbonbigapps.myhoster.database.dao.ServiceFeedbackDAO;
 import com.lisbonbigapps.myhoster.database.dao.UserDAO;
 import com.lisbonbigapps.myhoster.database.entities.EntityService;
 import com.lisbonbigapps.myhoster.database.entities.EntityServiceFeedback;
+import com.lisbonbigapps.myhoster.database.entities.EntityServiceStatus;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.ServiceFeedbackResource;
@@ -48,14 +49,14 @@ public class ServiceResponseFactory {
 	return this.assembleServiceResourceList(services);
     }
 
-    public RootResource createService(long hostId, long travellerId) {
-	if (hostId == travellerId) {
+    public RootResource createService(long userId, long hosterId) {
+	if (userId == hosterId) {
 	    return null;
 	}
 
 	UserDAO userDao = new UserDAO();
-	EntityUser host = userDao.findById(hostId);
-	EntityUser traveller = userDao.findById(travellerId);
+	EntityUser host = userDao.findById(hosterId);
+	EntityUser traveller = userDao.findById(userId);
 
 	if (host == null || host.getId() == null) {
 	    return null;
@@ -70,6 +71,7 @@ public class ServiceResponseFactory {
 	EntityService service = new EntityService();
 	service.setHoster(host);
 	service.setTravel(traveller);
+	service.setStatus(EntityServiceStatus.PENDING);
 
 	serviceDAO.create(service);
 
@@ -113,7 +115,106 @@ public class ServiceResponseFactory {
 	return null;
     }
 
-    public RootResource createServiceFeedback(long userId, long serviceId, String text, double rate) {
+    public RootResource serviceReply(long userId, long serviceId, String reply) {
+	ServiceDAO serviceDao = new ServiceDAO();
+	EntityService service = serviceDao.findById(serviceId);
+	if (service == null || service.getId() == null) {
+	    return null;
+	}
+
+	EntityUser host = service.getHoster();
+	EntityUser traveller = service.getTravel();
+	if (host == null || host.getId() == null || traveller == null || traveller.getId() == null) {
+	    return null;
+	}
+
+	if (host.getId() == userId) {
+	    EntityServiceStatus newStatus = null;
+
+	    if (reply.toLowerCase().equals("accept")) {
+		newStatus = EntityServiceStatus.ONGOING;
+	    }
+
+	    if (reply.toLowerCase().equals("reject")) {
+		newStatus = EntityServiceStatus.REJECTED;
+	    }
+
+	    EntityServiceStatus status = service.getStatus();
+	    if (status == EntityServiceStatus.PENDING && newStatus != null) {
+		service.setStatus(newStatus);
+		serviceDao.update(service);
+		return this.assembleServiceResource(service);
+	    }
+
+	    return null;
+	}
+
+	return null;
+    }
+
+    public RootResource serviceFinish(long userId, long serviceId) {
+	ServiceDAO serviceDao = new ServiceDAO();
+	EntityService service = serviceDao.findById(serviceId);
+	if (service == null || service.getId() == null) {
+	    return null;
+	}
+
+	EntityUser host = service.getHoster();
+	EntityUser traveller = service.getTravel();
+	if (host == null || host.getId() == null || traveller == null || traveller.getId() == null) {
+	    return null;
+	}
+
+	if (host.getId() == userId || traveller.getId() == userId) {
+	    EntityServiceStatus status = service.getStatus();
+
+	    if (status == EntityServiceStatus.ONGOING) {
+		service.setStatus(EntityServiceStatus.FINISHED);
+		serviceDao.update(service);
+		return this.assembleServiceResource(service);
+	    }
+
+	    return null;
+	}
+
+	return null;
+    }
+
+    public RootResource serviceRate(long userId, Long serviceId, int score) {
+	if (score < 1 || score > 5) {
+	    return null;
+	}
+
+	ServiceDAO serviceDao = new ServiceDAO();
+	EntityService service = serviceDao.findById(serviceId);
+	if (service == null || service.getId() == null) {
+	    return null;
+	}
+
+	EntityUser host = service.getHoster();
+	EntityUser traveller = service.getTravel();
+	if (host == null || host.getId() == null || traveller == null || traveller.getId() == null) {
+	    return null;
+	}
+
+	if (service.getStatus() == EntityServiceStatus.FINISHED) {
+	    if (host.getId() == userId) {
+		service.setHostRate((float) score);
+		serviceDao.update(service);
+		return this.assembleServiceResource(service);
+	    }
+
+	    if (traveller.getId() == userId) {
+		service.setTravellerRate((float) score);
+		serviceDao.update(service);
+		return this.assembleServiceResource(service);
+	    }
+	}
+
+	return null;
+    }
+
+    public RootResource createServiceFeedback(long userId, long serviceId, String text) {
 	ServiceDAO serviceDao = new ServiceDAO();
 	EntityService service = serviceDao.findById(serviceId);
 
@@ -139,7 +240,6 @@ public class ServiceResponseFactory {
 	ServiceFeedbackDAO serviceFeedbackDao = new ServiceFeedbackDAO();
 
 	EntityServiceFeedback feedback = new EntityServiceFeedback();
-	feedback.setRate(rate);
 	feedback.setUser(user);
 	feedback.setText(text);
 	feedback.setService(service);
@@ -164,6 +264,7 @@ public class ServiceResponseFactory {
 
 	ServiceResource r = new ServiceResource();
 	r.setId(service.getId());
+	r.setStatus(service.getStatus().name());
 	r.setHoster(userFactory.assembleUserResource(service.getHoster()));
 	r.setTraveller(userFactory.assembleUserResource(service.getTravel()));
 
@@ -183,7 +284,6 @@ public class ServiceResponseFactory {
     private RootResource assembleServiceFeedBackResource(EntityServiceFeedback feedback) {
 	ServiceFeedbackResource r = new ServiceFeedbackResource();
 
-	r.setRate(feedback.getRate());
 	r.setText(feedback.getText());
 	r.setUser(new UserResponseFactory().assembleUserResource(feedback.getUser()));
 

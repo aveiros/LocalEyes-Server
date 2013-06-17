@@ -14,34 +14,34 @@ import javax.ws.rs.core.Response;
 import com.lisbonbigapps.myhoster.rest.exception.BadRequestException;
 import com.lisbonbigapps.myhoster.rest.exception.NotFoundException;
 import com.lisbonbigapps.myhoster.rest.exception.UnauthorizedException;
-import com.lisbonbigapps.myhoster.rest.response.factories.HosterResponseFactory;
+import com.lisbonbigapps.myhoster.rest.response.factories.HostResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.factories.UserResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.util.Authentication;
 import com.lisbonbigapps.myhoster.rest.util.RestMediaType;
 
-@Path("/hosters")
-public class HosterFacade {
+@Path("/hosts")
+public class HostFacade {
     @Context
     HttpServletRequest request;
     Authentication auth = new Authentication();
 
     @GET
     @Produces(RestMediaType.Json)
-    public Response getHosters() throws Exception {
+    public Response getHosts() throws Exception {
 	this.auth.setHttpRequest(this.request);
 	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
 	}
 
 	UserResponseFactory factory = new UserResponseFactory();
-	return Response.ok(factory.getHosters()).build();
+	return Response.ok(factory.getHosts()).build();
     }
 
     @GET
     @Path("{id}")
     @Produces(RestMediaType.Json)
-    public Response getHosterById(@PathParam("id") Long id) throws Exception {
+    public Response getHostById(@PathParam("id") Long id) throws Exception {
 	this.auth.setHttpRequest(this.request);
 	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
@@ -51,8 +51,8 @@ public class HosterFacade {
 	    throw new BadRequestException();
 	}
 
-	HosterResponseFactory factory = new HosterResponseFactory();
-	RootResource resource = factory.getHoster(id);
+	HostResponseFactory factory = new HostResponseFactory();
+	RootResource resource = factory.getHost(id);
 	if (resource == null) {
 	    throw new NotFoundException();
 	}
@@ -63,7 +63,7 @@ public class HosterFacade {
     @GET
     @Path("find")
     @Produces(RestMediaType.Json)
-    public Response getHosterUsingRange(@QueryParam("latitude") Double latitude, @QueryParam("longitude") Double longitude, @QueryParam("distance") Double distance) throws Exception {
+    public Response getHostByDistance(@QueryParam("latitude") Double latitude, @QueryParam("longitude") Double longitude, @QueryParam("distance") Double distance) throws Exception {
 	this.auth.setHttpRequest(this.request);
 	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
@@ -73,7 +73,7 @@ public class HosterFacade {
 	    throw new BadRequestException();
 	}
 
-	HosterResponseFactory factory = new HosterResponseFactory();
+	HostResponseFactory factory = new HostResponseFactory();
 	List<RootResource> resources = factory.getHostsByDistance(this.auth.getUserId(), latitude, longitude, distance);
 
 	if (resources == null) {

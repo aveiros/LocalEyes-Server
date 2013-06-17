@@ -33,11 +33,13 @@
 		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityCountry" />
 		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityGallery" />
 		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityPhoto" />
+		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityServiceProfile" />
 		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityService" />
 		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityServiceFeedback" />
 		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntitySystemSettings" />
 		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityUser" />
 		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityUserContact" />
+		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityUserInterest" />
 		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityUserFeedback" />
 		<mapping class="com.lisbonbigapps.myhoster.database.entities.EntityUserPreferences" />
 

@@ -10,8 +10,8 @@ import com.lisbonbigapps.myhoster.database.dao.UserDAO;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 
-public class HosterResponseFactory {
-    public RootResource getHoster(long id) {
+public class HostResponseFactory {
+    public RootResource getHost(long id) {
 	UserDAO dao = new UserDAO();
 	EntityUser user = dao.findById(id);
 

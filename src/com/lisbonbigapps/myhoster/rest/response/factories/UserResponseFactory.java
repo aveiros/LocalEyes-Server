@@ -5,23 +5,33 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.lisbonbigapps.myhoster.app.Application;
+import com.lisbonbigapps.myhoster.database.dao.ServiceDAO;
+import com.lisbonbigapps.myhoster.database.dao.ServiceProfileDAO;
 import com.lisbonbigapps.myhoster.database.dao.UserContactDAO;
 import com.lisbonbigapps.myhoster.database.dao.UserDAO;
 import com.lisbonbigapps.myhoster.database.dao.UserFeedbackDAO;
+import com.lisbonbigapps.myhoster.database.dao.UserInterestDAO;
+import com.lisbonbigapps.myhoster.database.entities.EntityService;
+import com.lisbonbigapps.myhoster.database.entities.EntityServiceProfile;
+import com.lisbonbigapps.myhoster.database.entities.EntityServiceStatus;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
 import com.lisbonbigapps.myhoster.database.entities.EntityUserContact;
 import com.lisbonbigapps.myhoster.database.entities.EntityUserFeedback;
+import com.lisbonbigapps.myhoster.database.entities.EntityUserInterest;
 import com.lisbonbigapps.myhoster.database.util.DBAccess;
 import com.lisbonbigapps.myhoster.rest.exception.InternalServerException;
 import com.lisbonbigapps.myhoster.rest.response.resources.LocationResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
+import com.lisbonbigapps.myhoster.rest.response.resources.ServiceProfileResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserContactResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserFeedbackResource;
 import com.lisbonbigapps.myhoster.rest.response.resources.UserResource;
+import com.lisbonbigapps.myhoster.rest.util.Eval;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 
 public class UserResponseFactory {
@@ -58,7 +68,7 @@ public class UserResponseFactory {
 	return assembleUserResource(user);
     }
 
-    public List<RootResource> getHosters() {
+    public List<RootResource> getHosts() {
 	UserDAO dao = new UserDAO();
 	List<EntityUser> users = dao.findByStatus(true);
 
@@ -82,13 +92,20 @@ public class UserResponseFactory {
 
     public RootResource createUser(String username, String password) {
 	UserDAO userDao = new UserDAO();
+	ServiceProfileDAO serviceProfileDao = new ServiceProfileDAO();
 
 	EntityUser user = new EntityUser();
 	user.setName("");
 	user.setUsername(username);
 	user.setPassword(password);
 
-	return userDao.create(user) == -1 ? null : assembleUserResource(user);
+	EntityServiceProfile profile = new EntityServiceProfile();
+	profile.setUser(user);
+
+	userDao.create(user);
+	serviceProfileDao.create(profile);
+
+	return assembleUserResource(user);
     }
 
     public RootResource getUserLocation(long userId) {
@@ -152,6 +169,44 @@ public class UserResponseFactory {
 	if (user.getId() == userId) {
 	    userContactDao.delete(contact);
 	}
+    }
+
+    public RootResource updateUserServiceFee(long userId, long fee) {
+	ServiceProfileDAO profileDao = new ServiceProfileDAO();
+	EntityServiceProfile profile = profileDao.findByUserId(userId);
+	EntityUser user = profile.getUser();
+
+	if (profile == null || profile.getId() == null) {
+	    return null;
+	}
+
+	if (user == null || user.getId() == null) {
+	    return null;
+	}
+
+	profile.setFee(fee);
+	profileDao.update(profile);
+
+	return assembleUserResource(user);
+    }
+
+    public RootResource updateUserServiceDescription(long userId, String description) {
+	ServiceProfileDAO profileDao = new ServiceProfileDAO();
+	EntityServiceProfile profile = profileDao.findByUserId(userId);
+	EntityUser user = profile.getUser();
+
+	if (profile == null || profile.getId() == null) {
+	    return null;
+	}
+
+	if (user == null || user.getId() == null) {
+	    return null;
+	}
+
+	profile.setDescription(description);
+	profileDao.update(profile);
+
+	return assembleUserResource(user);
     }
 
     public RootResource updateUserLocation(long userId, double latitude, double longitude) {
@@ -288,18 +343,70 @@ public class UserResponseFactory {
     }
 
     public UserResource assembleUserResource(EntityUser user) {
+	UserInterestDAO interestDao = new UserInterestDAO();
+	ServiceProfileDAO profileDao = new ServiceProfileDAO();
+	ServiceDAO serviceDao = new ServiceDAO();
+
+	EntityServiceProfile profile = profileDao.findByUserId(user.getId());
+	List<EntityService> services = serviceDao.findByHostId(user.getId());
+	List<EntityUserInterest> interests = interestDao.findByUserId(user.getId());
+
 	UserResource userResource = new UserResource();
 	userResource.setId(user.getId());
 	userResource.setName(user.getName());
 	userResource.setUsername(user.getUsername());
 	userResource.setPhoto(user.getPhoto() == null ? Application.getInstance().getUserNoPhotoURI() : Application.getInstance().getUserPhotoURL(user.getPhoto()));
+	userResource.setLocation(this.assembleUserLocationResource(user));
+	userResource.setService(this.assembleUserServiceProfile(profile, services));
+	userResource.setInterests(this.assembleUserInterestsList(interests));
 
+	return userResource;
+    }
+
+    public LocationResource assembleUserLocationResource(EntityUser user) {
 	LocationResource locationResource = new LocationResource();
+
 	locationResource.setLatitude(user.getLatitude());
 	locationResource.setLongitude(user.getLongitude());
 
-	userResource.setLocation(locationResource);
-	return userResource;
+	return locationResource;
+    }
+
+    public ServiceProfileResource assembleUserServiceProfile(EntityServiceProfile profile, List<EntityService> services) {
+	ServiceProfileResource profileResource = new ServiceProfileResource();
+
+	profileResource.setDescription(Eval.value(profile.getDescription(), ""));
+	profileResource.setFee(profile.getFee() + "€");
+
+	float rates = 0;
+	long votes = 0;
+	for (EntityService service : services) {
+	    if (service.getStatus() == EntityServiceStatus.FINISHED) {
+		float rate = service.getTravellerRate();
+		if (rate > 0) {
+		    votes += 1;
+		    rates += service.getTravellerRate();
+		}
+	    }
+	}
+
+	profileResource.setRate(votes > 0 ? (rates / votes) : 0f);
+	profileResource.setVotes(votes);
+
+	return profileResource;
+    }
+
+    private List<String> assembleUserInterestsList(List<EntityUserInterest> userInterests) {
+	if (userInterests == null) {
+	    return new ArrayList<String>();
+	}
+
+	List<String> interests = new ArrayList<String>();
+	for (EntityUserInterest userInterest : userInterests) {
+	    interests.add(userInterest.getName());
+	}
+
+	return interests;
     }
 
     private List<RootResource> assembleUserContactResourceList(List<EntityUserContact> contacts) {

@@ -2,6 +2,7 @@ package com.lisbonbigapps.myhoster.database;
 
 import com.lisbonbigapps.myhoster.database.entities.EntityCity;
 import com.lisbonbigapps.myhoster.database.entities.EntityCountry;
+import com.lisbonbigapps.myhoster.database.entities.EntityServiceProfile;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
 import com.lisbonbigapps.myhoster.database.entities.EntityUserContact;
 import com.lisbonbigapps.myhoster.database.util.DBAccess;
@@ -16,6 +17,10 @@ public class Bootstrap {
 	user1.setLatitude(0);
 	user1.setHosting(true);
 
+	EntityServiceProfile profile1 = new EntityServiceProfile();
+	profile1.setUser(user1);
+	profile1.setFee(20);
+
 	EntityUserContact contact1 = new EntityUserContact();
 	contact1.setCode("+351");
 	contact1.setNumber("960000001");
@@ -28,6 +33,10 @@ public class Bootstrap {
 	user2.setLongitude(0);
 	user2.setLatitude(0);
 	user2.setHosting(true);
+
+	EntityServiceProfile profile2 = new EntityServiceProfile();
+	profile2.setUser(user2);
+	profile2.setFee(18);
 
 	EntityUserContact contact2 = new EntityUserContact();
 	contact2.setCode("+351");
@@ -42,6 +51,10 @@ public class Bootstrap {
 	user3.setLatitude(0);
 	user3.setHosting(true);
 
+	EntityServiceProfile profile3 = new EntityServiceProfile();
+	profile3.setUser(user3);
+	profile3.setFee(22);
+
 	EntityUserContact contact3 = new EntityUserContact();
 	contact3.setCode("+351");
 	contact3.setNumber("960000003");
@@ -51,24 +64,12 @@ public class Bootstrap {
 	DBAccess.saveItem(user2);
 	DBAccess.saveItem(user3);
 
+	DBAccess.saveItem(profile1);
+	DBAccess.saveItem(profile2);
+	DBAccess.saveItem(profile3);
+
 	DBAccess.saveItem(contact1);
 	DBAccess.saveItem(contact2);
 	DBAccess.saveItem(contact3);
-
-	EntityCountry country1 = new EntityCountry();
-	country1.setName("Portugal");
-
-	EntityCity city1 = new EntityCity();
-	city1.setName("Lisbon");
-
-	EntityCity city2 = new EntityCity();
-	city2.setName("Porto");
-
-	city1.setCountry(country1);
-	city2.setCountry(country1);
-
-	DBAccess.saveItem(country1);
-	DBAccess.saveItem(city1);
-	DBAccess.saveItem(city2);
     }
 }

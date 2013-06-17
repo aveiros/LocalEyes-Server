@@ -366,4 +366,37 @@ public class UserFacade {
 
 	return Response.ok(resource).build();
     }
+
+    @PUT
+    @Path("/service/fee")
+    @Produces(RestMediaType.Json)
+    public Response updateUserServiceFee(@QueryParam("value") String value) throws Exception {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	if (value == null || value.equals("")) {
+	    throw new BadRequestException();
+	}
+
+	return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/service/description")
+    @Produces(RestMediaType.Json)
+    public Response updateUserServiceDescription(@QueryParam("text") String text) throws Exception {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	if (text == null || text.equals("")) {
+	    throw new BadRequestException();
+	}
+
+	return Response.ok().build();
+    }
+
 }

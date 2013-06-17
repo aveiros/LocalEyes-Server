@@ -5,6 +5,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -47,18 +48,87 @@ public class ServiceFacade {
 
     @POST
     @Produces(RestMediaType.Json)
-    public Response createService(@QueryParam("traveller") Long travelerId) throws Exception {
+    public Response createService(@QueryParam("host") Long hosterId) throws Exception {
 	this.auth.setHttpRequest(this.req);
 	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
 	}
 
-	if (travelerId == null) {
+	if (hosterId == null) {
 	    throw new BadRequestException();
 	}
 
 	ServiceResponseFactory factory = new ServiceResponseFactory();
-	RootResource resource = factory.createService(this.auth.getUserId(), travelerId);
+	RootResource resource = factory.createService(this.auth.getUserId(), hosterId);
+
+	if (resource == null) {
+	    throw new NotFoundException();
+	}
+
+	return Response.ok(resource).build();
+    }
+
+    @PUT
+    @Path("{id}/reply")
+    @Produces(RestMediaType.Json)
+    public Response serviceReply(@PathParam("id") Long serviceId, @QueryParam("answer") String reply) throws Exception {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	if (serviceId == null || reply == null) {
+	    throw new BadRequestException();
+	}
+
+	ServiceResponseFactory factory = new ServiceResponseFactory();
+	RootResource resource = factory.serviceReply(this.auth.getUserId(), serviceId, reply);
+
+	if (resource == null) {
+	    throw new NotFoundException();
+	}
+
+	return Response.ok(resource).build();
+    }
+
+    @PUT
+    @Path("{id}/finish")
+    @Produces(RestMediaType.Json)
+    public Response serviceFinish(@PathParam("id") Long serviceId) throws Exception {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	if (serviceId == null) {
+	    throw new BadRequestException();
+	}
+
+	ServiceResponseFactory factory = new ServiceResponseFactory();
+	RootResource resource = factory.serviceFinish(this.auth.getUserId(), serviceId);
+
+	if (resource == null) {
+	    throw new NotFoundException();
+	}
+
+	return Response.ok(resource).build();
+    }
+
+    @PUT
+    @Path("{id}/rate")
+    @Produces(RestMediaType.Json)
+    public Response serviceRate(@PathParam("id") Long serviceId, @QueryParam("score") Integer score) throws Exception {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	if (serviceId == null || score == null) {
+	    throw new BadRequestException();
+	}
+
+	ServiceResponseFactory factory = new ServiceResponseFactory();
+	RootResource resource = factory.serviceRate(this.auth.getUserId(), serviceId, score);
 
 	if (resource == null) {
 	    throw new NotFoundException();
@@ -116,18 +186,18 @@ public class ServiceFacade {
     @POST
     @Path("{id}/feedback")
     @Produces(RestMediaType.Json)
-    public Response createServiceFeedback(@PathParam("id") Long serviceId, @QueryParam("text") String text, @QueryParam("rate") Double rate) throws Exception {
+    public Response createServiceFeedback(@PathParam("id") Long serviceId, @QueryParam("text") String text) throws Exception {
 	this.auth.setHttpRequest(this.req);
 	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
 	}
 
-	if (serviceId == null || text == null || rate == null) {
+	if (serviceId == null || text == null) {
 	    throw new BadRequestException();
 	}
 
 	ServiceResponseFactory factory = new ServiceResponseFactory();
-	factory.createServiceFeedback(this.auth.getUserId(), serviceId, text, rate);
+	factory.createServiceFeedback(this.auth.getUserId(), serviceId, text);
 
 	return Response.ok().build();
     }
