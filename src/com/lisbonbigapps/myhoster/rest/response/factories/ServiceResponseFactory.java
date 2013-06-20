@@ -49,6 +49,30 @@ public class ServiceResponseFactory {
 	return this.assembleServiceResourceList(services);
     }
 
+    public List<RootResource> getServicesHost(long userId) {
+	ServiceDAO serviceDao = new ServiceDAO();
+
+	List<EntityService> services = serviceDao.findByHostId(userId);
+
+	if (services == null) {
+	    return null;
+	}
+
+	return this.assembleServiceResourceList(services);
+    }
+
+    public List<RootResource> getServicesTourist(long userId) {
+	ServiceDAO serviceDao = new ServiceDAO();
+
+	List<EntityService> services = serviceDao.findByTravellerId(userId);
+
+	if (services == null) {
+	    return null;
+	}
+
+	return this.assembleServiceResourceList(services);
+    }
+
     public RootResource createService(long userId, long hosterId) {
 	if (userId == hosterId) {
 	    return null;

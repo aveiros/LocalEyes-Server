@@ -15,7 +15,6 @@ import com.lisbonbigapps.myhoster.rest.exception.BadRequestException;
 import com.lisbonbigapps.myhoster.rest.exception.NotFoundException;
 import com.lisbonbigapps.myhoster.rest.exception.UnauthorizedException;
 import com.lisbonbigapps.myhoster.rest.response.factories.HostResponseFactory;
-import com.lisbonbigapps.myhoster.rest.response.factories.UserResponseFactory;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 import com.lisbonbigapps.myhoster.rest.util.Authentication;
 import com.lisbonbigapps.myhoster.rest.util.RestMediaType;
@@ -25,18 +24,6 @@ public class HostFacade {
     @Context
     HttpServletRequest request;
     Authentication auth = new Authentication();
-
-    @GET
-    @Produces(RestMediaType.Json)
-    public Response getHosts() throws Exception {
-	this.auth.setHttpRequest(this.request);
-	if (!this.auth.hasUserSession()) {
-	    throw new UnauthorizedException();
-	}
-
-	UserResponseFactory factory = new UserResponseFactory();
-	return Response.ok(factory.getHosts()).build();
-    }
 
     @GET
     @Path("{id}")
@@ -63,7 +50,8 @@ public class HostFacade {
     @GET
     @Path("find")
     @Produces(RestMediaType.Json)
-    public Response getHostByDistance(@QueryParam("latitude") Double latitude, @QueryParam("longitude") Double longitude, @QueryParam("distance") Double distance) throws Exception {
+    public Response getHostByDistance(@QueryParam("distance") Double distance, @QueryParam("latitude") Double latitude, @QueryParam("longitude") Double longitude, @QueryParam("store") Boolean store)
+	    throws Exception {
 	this.auth.setHttpRequest(this.request);
 	if (!this.auth.hasUserSession()) {
 	    throw new UnauthorizedException();
@@ -74,7 +62,7 @@ public class HostFacade {
 	}
 
 	HostResponseFactory factory = new HostResponseFactory();
-	List<RootResource> resources = factory.getHostsByDistance(this.auth.getUserId(), latitude, longitude, distance);
+	List<RootResource> resources = factory.getHostsByDistance(this.auth.getUserId(), latitude, longitude, distance, store);
 
 	if (resources == null) {
 	    throw new NotFoundException();

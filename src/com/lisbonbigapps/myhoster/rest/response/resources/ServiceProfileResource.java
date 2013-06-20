@@ -2,7 +2,7 @@ package com.lisbonbigapps.myhoster.rest.response.resources;
 
 public class ServiceProfileResource extends RootResource {
     String description;
-    String fee;
+    float fee;
     float rate;
     long votes;
 
@@ -14,11 +14,11 @@ public class ServiceProfileResource extends RootResource {
 	this.description = description;
     }
 
-    public String getFee() {
+    public float getFee() {
 	return fee;
     }
 
-    public void setFee(String fee) {
+    public void setFee(float fee) {
 	this.fee = fee;
     }
 

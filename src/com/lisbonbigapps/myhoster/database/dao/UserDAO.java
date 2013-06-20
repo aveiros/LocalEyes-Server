@@ -29,14 +29,14 @@ public class UserDAO extends GenericDAO<EntityUser> {
 	return DBAccess.getDBItem(this.getType(), fquery);
     }
 
-    public List<EntityUser> findByLocation(double minLat, double maxLat, double minLong, double maxLong) {
+    public List<EntityUser> findByLocation(long excludeUserId, double minLat, double maxLat, double minLong, double maxLong) {
 	String _minLat = String.format(Locale.US, "%f", minLat);
 	String _maxLat = String.format(Locale.US, "%f", maxLat);
 	String _minLong = String.format(Locale.US, "%f", minLong);
 	String _maxLong = String.format(Locale.US, "%f", maxLong);
-	
-	String query = "from %s as user where user.latitude > %s and user.latitude < %s and user.longitude > %s and user.longitude < %s";
-	String fquery = String.format(query, this.getType().getSimpleName(), _minLat, _maxLat, _minLong, _maxLong);
+
+	String query = "from %s as user where user.id not in (%d) and user.hosting = %b and user.latitude > %s and user.latitude < %s and user.longitude > %s and user.longitude < %s";
+	String fquery = String.format(query, this.getType().getSimpleName(), excludeUserId, true, _minLat, _maxLat, _minLong, _maxLong);
 	return DBAccess.getDBItem(this.getType(), fquery);
     }
 }

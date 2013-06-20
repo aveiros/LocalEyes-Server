@@ -97,32 +97,27 @@ public class UserFacade {
     @POST
     @Path("register")
     @Produces(RestMediaType.Json)
-    public Response registerUser(@QueryParam("username") String usr, @QueryParam("password") String pwd) throws Exception {
-	// this.auth.setHttpRequest(this.req);
-	// if (!this.auth.hasUserSession()) {
-	// throw new UnauthorizedException();
-	// }
-
-	if (usr == null || usr.equals("")) {
+    public Response registerUser(@QueryParam("name") String name, @QueryParam("username") String username, @QueryParam("password") String password) throws Exception {
+	if (username == null || username.equals("")) {
 	    throw new BadRequestException();
 	}
 
-	if (pwd == null || pwd.equals("")) {
+	if (password == null || password.equals("")) {
 	    throw new BadRequestException();
 	}
 
 	XmppResponseFactory xmppFactory = new XmppResponseFactory();
 	UserResponseFactory userFactory = new UserResponseFactory();
 
-	RootResource xmppUser = xmppFactory.getUser(usr);
-	RootResource hostUser = userFactory.getUser(usr);
+	RootResource xmppUser = xmppFactory.getUser(username);
+	RootResource localUser = userFactory.getUser(username);
 
-	if (xmppUser == null || hostUser == null) {
+	if (xmppUser == null || localUser == null) {
 	    MessageResponseFactory msgFactory = new MessageResponseFactory();
 	    return Response.ok(msgFactory.createError("User already exists")).build();
 	} else {
-	    xmppFactory.createUser(usr, pwd);
-	    userFactory.createUser(usr, pwd);
+	    xmppFactory.createUser(name, username, password);
+	    userFactory.createUser(name, username, password);
 	    return Response.ok().build();
 	}
     }

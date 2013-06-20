@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,12 +89,12 @@ public class UserResponseFactory {
 	return this.assembleUserResourceList(users);
     }
 
-    public RootResource createUser(String username, String password) {
+    public RootResource createUser(String name, String username, String password) {
 	UserDAO userDao = new UserDAO();
 	ServiceProfileDAO serviceProfileDao = new ServiceProfileDAO();
 
 	EntityUser user = new EntityUser();
-	user.setName("");
+	user.setName(name == null ? "" : name);
 	user.setUsername(username);
 	user.setPassword(password);
 
@@ -359,6 +358,7 @@ public class UserResponseFactory {
 	userResource.setLocation(this.assembleUserLocationResource(user));
 	userResource.setService(this.assembleUserServiceProfile(profile, services));
 	userResource.setInterests(this.assembleUserInterestsList(interests));
+	userResource.setPhoneNumber(user.getPhoneNumber());
 
 	return userResource;
     }
@@ -376,7 +376,7 @@ public class UserResponseFactory {
 	ServiceProfileResource profileResource = new ServiceProfileResource();
 
 	profileResource.setDescription(Eval.value(profile.getDescription(), ""));
-	profileResource.setFee(profile.getFee() + "€");
+	profileResource.setFee(profile.getFee());
 
 	float rates = 0;
 	long votes = 0;

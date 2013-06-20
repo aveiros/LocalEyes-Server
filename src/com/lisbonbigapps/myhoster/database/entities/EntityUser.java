@@ -17,6 +17,7 @@ public class EntityUser extends PersistentObject {
     String username;
     String password;
     String photo;
+    String phoneNumber;
 
     @Column(nullable = false, length = 1)
     @Type(type = "true_false")
@@ -126,5 +127,13 @@ public class EntityUser extends PersistentObject {
 
     public void setPhoto(String photo) {
 	this.photo = photo;
+    }
+
+    public String getPhoneNumber() {
+	return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+	this.phoneNumber = phoneNumber;
     }
 }

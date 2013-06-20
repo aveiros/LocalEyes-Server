@@ -16,7 +16,7 @@ public class XmppResponseFactory {
 	return hasUser ? this.assembleResource(username) : null;
     }
 
-    public RootResource createUser(String username, String password) {
+    public RootResource createUser(String name, String username, String password) {
 	XmppServerProxy server = new XmppServerProxy();
 	if (!server.isOnline()) {
 	    throw new InternalServerException();

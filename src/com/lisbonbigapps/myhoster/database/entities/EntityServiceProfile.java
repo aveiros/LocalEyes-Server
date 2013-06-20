@@ -1,5 +1,6 @@
 package com.lisbonbigapps.myhoster.database.entities;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;
 
@@ -12,7 +13,8 @@ public class EntityServiceProfile extends PersistentObject {
 
     String description;
 
-    long fee;
+    @Column(precision = 10, scale = 2)
+    float fee;
 
     public EntityUser getUser() {
 	return user;
@@ -30,11 +32,11 @@ public class EntityServiceProfile extends PersistentObject {
 	this.description = description;
     }
 
-    public long getFee() {
+    public float getFee() {
 	return fee;
     }
 
-    public void setFee(long fee) {
+    public void setFee(float fee) {
 	this.fee = fee;
     }
 }

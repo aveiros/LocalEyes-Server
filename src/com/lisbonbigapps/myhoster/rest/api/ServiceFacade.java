@@ -46,6 +46,44 @@ public class ServiceFacade {
 	return Response.ok(resources).build();
     }
 
+    @GET
+    @Path("host")
+    @Produces(RestMediaType.Json)
+    public Response getHostingServices() throws Exception {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	ServiceResponseFactory factory = new ServiceResponseFactory();
+	List<RootResource> resources = factory.getServicesHost(this.auth.getUserId());
+
+	if (resources == null) {
+	    throw new NotFoundException();
+	}
+
+	return Response.ok(resources).build();
+    }
+
+    @GET
+    @Path("tourist")
+    @Produces(RestMediaType.Json)
+    public Response getxServices() throws Exception {
+	this.auth.setHttpRequest(this.req);
+	if (!this.auth.hasUserSession()) {
+	    throw new UnauthorizedException();
+	}
+
+	ServiceResponseFactory factory = new ServiceResponseFactory();
+	List<RootResource> resources = factory.getServicesTourist(this.auth.getUserId());
+
+	if (resources == null) {
+	    throw new NotFoundException();
+	}
+
+	return Response.ok(resources).build();
+    }
+
     @POST
     @Produces(RestMediaType.Json)
     public Response createService(@QueryParam("host") Long hosterId) throws Exception {

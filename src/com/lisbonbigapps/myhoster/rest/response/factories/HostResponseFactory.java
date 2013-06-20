@@ -8,6 +8,7 @@ import com.javadocmd.simplelatlng.LatLngTool;
 import com.javadocmd.simplelatlng.util.LengthUnit;
 import com.lisbonbigapps.myhoster.database.dao.UserDAO;
 import com.lisbonbigapps.myhoster.database.entities.EntityUser;
+import com.lisbonbigapps.myhoster.database.util.DBAccess;
 import com.lisbonbigapps.myhoster.rest.response.resources.RootResource;
 
 public class HostResponseFactory {
@@ -22,7 +23,7 @@ public class HostResponseFactory {
 	return assembleHostResource(user);
     }
 
-    public List<RootResource> getHostsByDistance(long userId, Double latitude, Double longitude, double distance) {
+    public List<RootResource> getHostsByDistance(long userId, Double latitude, Double longitude, double distance, Boolean store) {
 	UserDAO dao = new UserDAO();
 	EntityUser user = dao.findById(userId);
 
@@ -36,6 +37,13 @@ public class HostResponseFactory {
 	if (latitude == null || longitude == null) {
 	    referencePoint = new LatLng(user.getLatitude(), user.getLongitude());
 	} else {
+	    /* stores incoming point */
+	    if (Boolean.TRUE.equals(store)) {
+		user.setLatitude(latitude);
+		user.setLongitude(longitude);
+		dao.update(user);
+	    }
+
 	    referencePoint = new LatLng(latitude, longitude);
 	}
 
@@ -49,7 +57,7 @@ public class HostResponseFactory {
 	double minLong = westPoint.getLongitude();
 	double maxLong = eastPoint.getLongitude();
 
-	List<EntityUser> users = dao.findByLocation(minLat, maxLat, minLong, maxLong);
+	List<EntityUser> users = dao.findByLocation(userId, minLat, maxLat, minLong, maxLong);
 	if (users == null) {
 	    return null;
 	}
